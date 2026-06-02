@@ -1,0 +1,4 @@
+Salut,... ito misi an le prototype fa za am le ts afaka miakatra samedi de soh misi zvtr ilaina lah de ne za ts eo.... Efa nasiko fanazavana kelii ao anatin ao
+
+
+return self.grid[y][x] # ex: grid[12][34] pour accéder à la cellule à (34, 12) Normal rah inverser mintsn io oe  [y] puis [x] eo am grid[y][x]
