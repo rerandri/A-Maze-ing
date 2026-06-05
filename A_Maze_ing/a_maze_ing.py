@@ -37,7 +37,10 @@ def main(argv: list[str] | None = None) -> None:
                 f.write("\n".join(output_lines) + "\n")
             print(f"Maze generated and saved to '{output_file}'")
             renderer = AsciiRenderer(maze)
-            renderer.run_iterative()
+            try:
+                renderer.run_iterative()
+            except (KeyboardInterrupt, EOFError):
+                print("\nOperation cancelled on Renderer.")
         except OSError as err:
             print(f"Error writing to file: {err}", file=sys.stderr)
             sys.exit(1)
