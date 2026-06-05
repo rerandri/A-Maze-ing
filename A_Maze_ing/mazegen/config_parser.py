@@ -9,6 +9,7 @@ class MazeConfig(TypedDict):
     ENTRY: tuple[int, int]
     EXIT: tuple[int, int]
     SEED: int | None
+    PERFECT: bool
     OUTPUT_FILE: str
 
 
@@ -88,6 +89,15 @@ def parse_config(config: Mapping[str, object]) -> MazeConfig:
 
     seed = _optional_seed(config)
     output_file = _optional_output_file(config)
+    perfect = config.get("PERFECT", True)
+    if not isinstance(perfect, bool):
+        raise TypeError("PERFECT must be a boolean.")
+
+    if normalized_entry == normalized_exit:
+        raise ValueError(
+            "Entry and exit must be different, got both at "
+            f"{normalized_entry}."
+        )
 
     return {
         "WIDTH": width,
@@ -95,5 +105,6 @@ def parse_config(config: Mapping[str, object]) -> MazeConfig:
         "ENTRY": normalized_entry,
         "EXIT": normalized_exit,
         "SEED": seed,
+        "PERFECT": perfect,
         "OUTPUT_FILE": output_file,
     }

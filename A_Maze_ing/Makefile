@@ -34,8 +34,11 @@ lint-strict:
 	mypy . --strict
 
 build:
-	$(PYTHON) -m BUILD_DIR
+	$(PYTHON) -m build
 	@echo "Package built in $(BUILD_DIR)/"
+
+debug:
+	$(PYTHON) -m pdb $(MAIN) $(CONFIG)
 
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || True

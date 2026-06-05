@@ -5,6 +5,7 @@ import time
 
 from mazegen import MazeGenerator
 
+
 class Color:
     RESET = "\033[0m"
     BG_WHITE = "\033[107m"
@@ -26,22 +27,45 @@ class AsciiRenderer:
         C.BG_PURPLE + BLOCK_CHAR,
     ]
 
+    BLOCKED42_OPTIONS = [
+        C.BG_PURPLE + BLOCK_CHAR,
+        C.BG_RED + BLOCK_CHAR,
+        C.BG_CYAN + BLOCK_CHAR,
+        C.BG_GREEN + BLOCK_CHAR,
+    ]
+
     EMPTY: str = WALL_OPTIONS[0]
     BACKGROUND: str = C.BG_BLACK + BLOCK_CHAR
-    BLOCKED: str = C.BG_PURPLE + BLOCK_CHAR
+    BLOCKED: str = BLOCKED42_OPTIONS[0]
     PATH: str = C.BG_GREEN + BLOCK_CHAR
     START: str = C.BG_BLUE + BLOCK_CHAR
     END: str = C.BG_RED + BLOCK_CHAR
 
     def __init__(self, maze: MazeGenerator) -> None:
-        """Initialize the renderer with a generated maze instance."""
+        """Initialize the renderer with a generated maze instance.
+
+        Args:
+            maze: A fully generated MazeGenerator instance.
+        """
         self.maze: MazeGenerator = maze
         self._color_index: int = 0
+        self._blocked42_index: int = 0
         self.show_path: bool = False
         self._last_render_lines: int = 0
+        self.EMPTY: str = self.WALL_OPTIONS[0]
+        self.BACKGROUND: str = self.C.BG_BLACK + self.BLOCK_CHAR
+        self.BLOCKED: str = self.BLOCKED42_OPTIONS[0]
+        self.PATH: str = self.C.BG_GREEN + self.BLOCK_CHAR
+        self.START: str = self.C.BG_BLUE + self.BLOCK_CHAR
+        self.END: str = self.C.BG_RED + self.BLOCK_CHAR
 
     def _build_pixels(self) -> list[list[str]]:
-        """Build a 2D character matrix representing the maze."""
+        """Build a 2D character matrix representing the maze.
+
+        Returns:
+            A 2D list where each inner list is a row of ANSI-colored strings.
+            Dimensions are (height*2+1) x (width*2+1).
+        """
         cols: int = self.maze.width * 2 + 1
         rows: int = self.maze.height * 2 + 1
         pixels: list[list[str]] = [
@@ -93,13 +117,26 @@ class AsciiRenderer:
         self._last_render_lines = len(pixels)
 
     def render(self) -> str:
-        """Return the maze rendering as a single string."""
+        """Return the maze rendering as a single string.
+
+        Returns:
+            A string with newlines representing the full maze grid,
+            including ANSI escape codes for colors.
+        """
         pixels: list[list[str]] = self._build_pixels()
         rendered: str = "\n".join("".join(row) for row in pixels)
         return rendered
 
     def display(self, show_path: bool = False) -> None:
-        """Display the maze and optionally animate the solution path."""
+        """Display the maze and optionally animate the solution path.
+
+        If the terminal is too small, prints an error in red and returns.
+        When show_path is True, animates the shortest path from entry to exit
+        using green cells with a small delay between steps.
+
+        Args:
+            show_path: Whether to animate the solution path.
+        """
         self.show_path = show_path
 
         if not self._maze_fits():
@@ -153,7 +190,8 @@ class AsciiRenderer:
             print("2. Display maze")
             print("3. Show/Hide path from entry to exit")
             print("4. Rotate maze colors")
-            print("5. Quit\nChoice? (1-5): ", end="", flush=True)
+            print("5. Cycle '42' pattern colors")
+            print("6. Quit\nChoice? (1-6): ", end="", flush=True)
             try:
                 answer: str = input()
             except (KeyboardInterrupt, EOFError):
@@ -184,7 +222,13 @@ class AsciiRenderer:
                 self.EMPTY = self.WALL_OPTIONS[self._color_index]
                 self.display(show_path=self.show_path)
             elif answer == "5":
+                self._blocked42_index = (
+                    self._blocked42_index + 1
+                ) % len(self.BLOCKED42_OPTIONS)
+                self.BLOCKED = self.BLOCKED42_OPTIONS[self._blocked42_index]
+                self.display(show_path=self.show_path)
+            elif answer == "6":
                 print("Bye!")
                 break
             else:
-                print("Invalid choice. Please enter a number from 1 to 5.")
+                print("Invalid choice. Please enter a number from 1 to 5.\n")

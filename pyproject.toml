@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mazegen"
+version = "1.0.0"
+description = "Standalone maze generator module — reusable Python package"
+readme = "A_Maze_ing/README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["A_Maze_ing"]
+include = ["mazegen*"]

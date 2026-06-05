@@ -1,26 +1,46 @@
-TODO:
+# ============================================================================
+# A-Maze-ing — Projet TODO
+# ============================================================================
+
+## Exigences obligatoires (sujet IV)
+
 [x]- Creer une fenetre avec mlx  **ACHÉVÉ**
-[x]- [Bonus] animation lors de generations/chemin  **ACHÉVÉ**
-[x]- Optionel: changement du color 42 pattern  **ACHÉVÉ**
-[x]- les murs ne doit jamais etre epais (non 3x3 ou plus)  **ACHÉVÉ**
+[x]- [Bonus] animation lors du chemin  **ACHÉVÉ**
+[x]- Optionel: changement du color 42 pattern  **ACHÉVÉ** (touches B / menu 5)
+[x]- les murs ne doit jamais etre epais (non 3x3 ou plus)  **ACHÉVÉ** (DFS 1-cellule)
 [x]- [Config.txt] '#' ignorer ces lignes  **ACHÉVÉ**
-[ ]- Verifie entry/exit doit etre differents entre eux **(entry different exit)
-[~]- [Config.txt] ajout flag 'PERFECT' qui generer qu'un seul chemin vers la sorti.  **PARSING OK — generation pas encore implémentée**
-[ ]- [General instruction] III.3 Additional Guidelines
+[x]- Verifie entry/exit doit etre differents entre eux  **ACHÉVÉ**
+[x]- [Config.txt] flag 'PERFECT' implementé  **ACHÉVÉ** (génération + parsing)
+[x]- [General instruction] III.3 Additional Guidelines  **PARTIEL** (manque tests unitaires)
+[x]- flake8 clean (sauf display/mlx.py)  **ACHÉVÉ**
+[x]- Google-style docstrings  **ACHÉVÉ**
+[x]- make debug ajouté  **ACHÉVÉ**
+[x]- make build fonctionnel (pyproject.toml)  **ACHÉVÉ**
+[x]- README.md complété  **ACHÉVÉ**
+[x]- .gitignore présent  **ACHÉVÉ**
 
+## À faire encore
 
-Rirandri:
---
--
--
--
--
--
+[ ]- tests unitaires (pytest)
+[ ]- animation lors de la génération (bonus)
+[ ]- algorithmes multiples (Kruskal, Prim) (bonus)
 
+## Rirandri
 
-Rirazafi:
+<OK>- configuration parsing + output file
+<OK>- MLX window + keyboard hooks
+<OK>- MLX draw maze + path animation
+<OK>- 42 pattern color cycling (MLX)
+<OK>- pyproject.toml / build system
+
+## Rirazafi
+
 <OK>- interface labyrinth Operationnel  **ACHÉVÉ**
 <OK>- interface MLX Operationnel  **ACHÉVÉ**
 <OK>- fix render bugs (doublons lignes terminal)  **ACHÉVÉ**
 <OK>- choix entre ASCII et MLX au lancement  **ACHÉVÉ**
--
+<OK>- PERFECT flag + extra passages  **ACHÉVÉ**
+<OK>- entry/exit validation  **ACHÉVÉ**
+<OK>- google-style docstrings  **ACHÉVÉ**
+<OK>- 42 pattern color cycling (ASCII)  **ACHÉVÉ**
+<OK>- README.md complet  **ACHÉVÉ**

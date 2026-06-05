@@ -41,6 +41,7 @@ def main(argv: list[str] | None = None) -> None:
             entry=raw_config["ENTRY"],
             exit=raw_config["EXIT"],
             seed=raw_config["SEED"],
+            perfect=raw_config["PERFECT"],
         )
         maze.generate()
         output_lines: list[str] = [

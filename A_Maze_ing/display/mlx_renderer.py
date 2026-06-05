@@ -58,10 +58,18 @@ class MlxRenderer:
         MlxColor.WALL_PURPLE,
     ]
 
+    BLOCKED42_OPTIONS: list[int] = [
+        MlxColor.BLOCKED,
+        MlxColor.END,
+        MlxColor.WALL_CYAN,
+        MlxColor.PATH,
+    ]
+
     # X11 keysym codes
     KEY_R: int = 114
     KEY_P: int = 112
     KEY_C: int = 99
+    KEY_B: int = 98
     KEY_ESC: int = 65307
 
     def __init__(self, maze: MazeGenerator, cell_size: int = 20) -> None:
@@ -74,6 +82,8 @@ class MlxRenderer:
         self.maze: MazeGenerator = maze
         self.cell_size: int = cell_size
         self._color_index: int = 0
+        self._blocked42_index: int = 0
+        self._blocked42_color: int = self.BLOCKED42_OPTIONS[0]
         self._show_path: bool = False
         self._path_step: int = 0
         self._solution: list[str] = []
@@ -150,7 +160,7 @@ class MlxRenderer:
         for y in range(self.maze.height):
             for x in range(self.maze.width):
                 cell_color: int = (
-                    MlxColor.BLOCKED
+                    self._blocked42_color
                     if (x, y) in self.maze._blocked
                     else MlxColor.BACKGROUND
                 )
@@ -267,6 +277,15 @@ class MlxRenderer:
             ) % len(self.WALL_OPTIONS)
             self._refresh()
 
+        elif keycode == self.KEY_B:
+            self._blocked42_index = (
+                self._blocked42_index + 1
+            ) % len(self.BLOCKED42_OPTIONS)
+            self._blocked42_color = self.BLOCKED42_OPTIONS[
+                self._blocked42_index
+            ]
+            self._refresh()
+
     def _on_loop(self, param: object) -> None:
         """Advance path animation each frame.
 
@@ -351,7 +370,8 @@ class MlxRenderer:
         print("=== A-Maze-ing (MLX) ===")
         print("  R   - re-generate maze")
         print("  P   - toggle path")
-        print("  C   - cycle colors")
+        print("  C   - cycle wall colors")
+        print("  B   - cycle '42' pattern colors")
         print("  ESC - quit  |  Ctrl+\\ - force kill")
 
         self._mlx.mlx_loop(self._mlx_ptr)

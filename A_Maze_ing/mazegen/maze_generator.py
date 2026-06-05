@@ -38,6 +38,7 @@ class MazeGenerator:
         entry: tuple[int, int],
         exit: tuple[int, int],
         seed: int | None = None,
+        perfect: bool = True,
     ) -> None:
         self.width: int = width
         self.height: int = height
@@ -45,6 +46,7 @@ class MazeGenerator:
         self.exit: tuple[int, int] = exit
         self._blocked: set[tuple[int, int]] = set()
         self.seed: int = seed if seed is not None else random.randint(0, 2**31)
+        self.perfect: bool = perfect
         self.grid: list[list[int]] = []
         self._solution: list[str] = []
         self._generated: bool = False
@@ -106,11 +108,17 @@ class MazeGenerator:
         return ["".join(f"{cell:X}" for cell in row) for row in self.grid]
 
     def generate(self) -> None:
-        """Generate maze structure and compute the shortest solution path."""
+        """Generate maze structure and compute the shortest solution path.
+
+        If perfect is False, extra walls are removed after generation to create
+        loops and alternative paths (imperfect maze).
+        """
         self._init_grid()
         random.seed(self.seed)
         self._carve_pattern42()
         self._generate_dfs()
+        if not self.perfect:
+            self._add_extra_passages()
         self._solve_bfs()
         self._generated = True
 
@@ -170,6 +178,32 @@ class MazeGenerator:
                 stack.append((next_x, next_y))
             else:
                 stack.pop()
+
+    def _add_extra_passages(self) -> None:
+        """Remove additional walls to create loops (imperfect maze).
+
+        For each cell, with 50% probability, remove a wall to a random neighbor
+        if that wall is still present and the neighbor is not blocked.
+        """
+        for y in range(self.height):
+            for x in range(self.width):
+                if (x, y) in self._blocked:
+                    continue
+                directions = list(self.DELTA.items())
+                random.shuffle(directions)
+                for direction, (dx, dy) in directions:
+                    nx, ny = x + dx, y + dy
+                    if (
+                        self._in_bounds(nx, ny)
+                        and (nx, ny) not in self._blocked
+                        and self._has_wall_internal(x, y, direction)
+                        and random.random() < 0.5
+                    ):
+                        self._remove_wall(
+                            x, y, direction,
+                            nx, ny, self.OPPOSITE[direction],
+                        )
+                        break  # un seul mur supprimé par cellule
 
     def _solve_bfs(self) -> None:
         """Find the shortest path from entry to exit using BFS."""
