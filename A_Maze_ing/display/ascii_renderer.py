@@ -1,4 +1,6 @@
 import random
+import shutil
+import sys
 import time
 
 from mazegen import MazeGenerator
@@ -36,6 +38,7 @@ class AsciiRenderer:
         self.maze: MazeGenerator = maze
         self._color_index: int = 0
         self.show_path: bool = False
+        self._last_render_lines: int = 0
 
     def _build_pixels(self) -> list[list[str]]:
         """Build a 2D character matrix representing the maze."""
@@ -64,6 +67,31 @@ class AsciiRenderer:
 
         return pixels
 
+    def _maze_fits(self) -> bool:
+        """Check whether the maze fits in the current terminal window."""
+        term_cols, term_lines = shutil.get_terminal_size(fallback=(80, 24))
+        needed_cols = (self.maze.width * 2 + 1) * 2  # each cell = 2 chars wide
+        needed_lines = self.maze.height * 2 + 1 + 2   # +2 for margin
+        return term_cols >= needed_cols and term_lines >= needed_lines
+
+    def _flush_render(self, pixels: list[list[str]]) -> None:
+        """Write the full pixel grid to stdout in a single atomic write.
+
+        Moves the cursor up by exactly the number of lines written last time,
+        clears from there to end-of-screen, then writes the new frame.
+        This avoids the duplicate-lines artifact caused by \033[H (absolute
+        repositioning) when the terminal is small or the user has scrolled.
+        """
+        output = "\n".join("".join(row) for row in pixels)
+        if self._last_render_lines > 0:
+            # Move up N lines then erase to end of screen
+            preamble = f"\033[{self._last_render_lines}A\033[0J"
+        else:
+            preamble = ""
+        sys.stdout.write(preamble + output + "\n")
+        sys.stdout.flush()
+        self._last_render_lines = len(pixels)
+
     def render(self) -> str:
         """Return the maze rendering as a single string."""
         pixels: list[list[str]] = self._build_pixels()
@@ -73,19 +101,24 @@ class AsciiRenderer:
     def display(self, show_path: bool = False) -> None:
         """Display the maze and optionally animate the solution path."""
         self.show_path = show_path
+
+        if not self._maze_fits():
+            print(
+                "\033[31mTerminal window too small to display the maze. "
+                "Please resize and try again.\033[0m",
+                flush=True,
+            )
+            return
+
         entry_x, entry_y = self.maze.entry
         exit_x, exit_y = self.maze.exit
         pixels: list[list[str]] = self._build_pixels()
         pixels[2 * entry_y + 1][2 * entry_x + 1] = self.START
         pixels[2 * exit_y + 1][2 * exit_x + 1] = self.END
 
-        def _refresh() -> None:
-            print("\033[H", end="", flush=True)
-            print("\n".join("".join(row) for row in pixels), flush=True)
-            time.sleep(0.02)
-
-        print("\033[2J\033[H", end="", flush=True)
-        print("\n".join("".join(row) for row in pixels), flush=True)
+        # First frame: reset render state and do a clean print
+        self._last_render_lines = 0
+        self._flush_render(pixels)
 
         if not show_path:
             return
@@ -105,10 +138,12 @@ class AsciiRenderer:
                 pixels[2 * curr_y + 1][2 * curr_x] = self.PATH
                 curr_x -= 1
             pixels[2 * curr_y + 1][2 * curr_x + 1] = self.PATH
-            _refresh()
+            self._flush_render(pixels)
+            time.sleep(0.02)
 
+        # Restore exit marker after path overwrites it
         pixels[2 * exit_y + 1][2 * exit_x + 1] = self.END
-        _refresh()
+        self._flush_render(pixels)
 
     def run_iterative(self) -> None:
         """Run the interactive terminal menu for maze actions."""
@@ -138,7 +173,6 @@ class AsciiRenderer:
                 self.maze.generate()
                 self.display(show_path=self.show_path)
             elif answer == "2":
-                print("\033[H", end="", flush=True)
                 self.display()
             elif answer == "3":
                 self.show_path = not self.show_path

@@ -1,12 +1,12 @@
 TODO:
-[]- Creer une fenetre avec mlx
-[]- [Bonus] animation lors de generations/chemin
-[]- Optionel: changement du color 42 pattern
-[]- Verifie entry/exit doit etre differents etre eux. **(entry different exit)
-[]- les murs ne doit jamais etre epais (non 3x3 ou plus)
-[]- [Config.txt] ajout flag 'PERFECT' qui generer qu'un seul chemin vers la sorti.
-[]- [Config.txt] '#' ignorer ces lignes
-[]- [General instruction] III.3 Additional Guidelines
+[x]- Creer une fenetre avec mlx  **ACHÉVÉ**
+[x]- [Bonus] animation lors de generations/chemin  **ACHÉVÉ**
+[x]- Optionel: changement du color 42 pattern  **ACHÉVÉ**
+[x]- les murs ne doit jamais etre epais (non 3x3 ou plus)  **ACHÉVÉ**
+[x]- [Config.txt] '#' ignorer ces lignes  **ACHÉVÉ**
+[ ]- Verifie entry/exit doit etre differents entre eux **(entry different exit)
+[~]- [Config.txt] ajout flag 'PERFECT' qui generer qu'un seul chemin vers la sorti.  **PARSING OK — generation pas encore implémentée**
+[ ]- [General instruction] III.3 Additional Guidelines
 
 
 Rirandri:
@@ -19,9 +19,8 @@ Rirandri:
 
 
 Rirazafi:
-<OK>- interface labyrinth Operationnel
--
--
--
--
+<OK>- interface labyrinth Operationnel  **ACHÉVÉ**
+<OK>- interface MLX Operationnel  **ACHÉVÉ**
+<OK>- fix render bugs (doublons lignes terminal)  **ACHÉVÉ**
+<OK>- choix entre ASCII et MLX au lancement  **ACHÉVÉ**
 -
