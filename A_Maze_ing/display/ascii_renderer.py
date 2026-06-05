@@ -116,17 +116,6 @@ class AsciiRenderer:
         sys.stdout.flush()
         self._last_render_lines = len(pixels)
 
-    def render(self) -> str:
-        """Return the maze rendering as a single string.
-
-        Returns:
-            A string with newlines representing the full maze grid,
-            including ANSI escape codes for colors.
-        """
-        pixels: list[list[str]] = self._build_pixels()
-        rendered: str = "\n".join("".join(row) for row in pixels)
-        return rendered
-
     def display(self, show_path: bool = False) -> None:
         """Display the maze and optionally animate the solution path.
 
@@ -231,4 +220,4 @@ class AsciiRenderer:
                 print("Bye!")
                 break
             else:
-                print("Invalid choice. Please enter a number from 1 to 5.\n")
+                print("Invalid choice. Please enter a number from 1 to 6.\n")

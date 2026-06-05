@@ -70,7 +70,10 @@ class MlxRenderer:
     KEY_P: int = 112
     KEY_C: int = 99
     KEY_B: int = 98
+    KEY_A: int = 97
     KEY_ESC: int = 65307
+
+    ALGORITHMS: list[str] = ["dfs", "kruskal"]
 
     def __init__(self, maze: MazeGenerator, cell_size: int = 20) -> None:
         """Initialize the renderer.
@@ -90,6 +93,14 @@ class MlxRenderer:
         self._curr_x: int = 0
         self._curr_y: int = 0
         self._animating: bool = False
+
+        # Algorithm selection
+        self._algorithm: str = "dfs"
+        self._algo_index: int = 0
+
+        # Generation animation state
+        self._generating: bool = False
+        self._gen_step_iter: object = None
 
         # MLX handles — set in run()
         self._mlx: Optional[object] = None
@@ -217,9 +228,77 @@ class MlxRenderer:
         self._path_step += 1
         self._flush()
 
-    # -----------------------------------------------------------------------
-    # Flush & refresh
-    # -----------------------------------------------------------------------
+    def _draw_from_grid(self, grid: list[list[int]]) -> None:
+        """Draw the maze from a raw grid snapshot (for generation animation).
+
+        Args:
+            grid: A 2D list of wall bitmasks, same format as self.maze.grid.
+        """
+        wall_color: int = self.WALL_OPTIONS[self._color_index]
+        cols: int = self.maze.width * 2 + 1
+        rows: int = self.maze.height * 2 + 1
+
+        for row in range(rows):
+            for col in range(cols):
+                self._fill_cell(col, row, wall_color)
+
+        for y in range(self.maze.height):
+            for x in range(self.maze.width):
+                is_blocked = (x, y) in self.maze._blocked
+                cell_color = (
+                    self._blocked42_color if is_blocked
+                    else MlxColor.BACKGROUND
+                )
+                self._fill_cell(2 * x + 1, 2 * y + 1, cell_color)
+
+                cell = grid[y][x]
+                if not (cell & MazeGenerator.NORTH):
+                    self._fill_cell(2 * x + 1, 2 * y, MlxColor.BACKGROUND)
+                if not (cell & MazeGenerator.SOUTH):
+                    self._fill_cell(2 * x + 1, 2 * y + 2, MlxColor.BACKGROUND)
+                if not (cell & MazeGenerator.EAST):
+                    self._fill_cell(2 * x + 2, 2 * y + 1, MlxColor.BACKGROUND)
+                if not (cell & MazeGenerator.WEST):
+                    self._fill_cell(2 * x, 2 * y + 1, MlxColor.BACKGROUND)
+
+        ex, ey = self.maze.entry
+        xx, xy = self.maze.exit
+        self._fill_cell(2 * ex + 1, 2 * ey + 1, MlxColor.START)
+        self._fill_cell(2 * xx + 1, 2 * xy + 1, MlxColor.END)
+
+    def _start_generation(self) -> None:
+        """Begin animated maze generation using generate_step()."""
+        self.maze._generated = False
+        self._animating = False
+        self._generating = True
+        try:
+            self._gen_step_iter = self.maze.generate_step(self._algorithm)
+        except Exception as exc:
+            print(f"Generation error: {exc}", file=sys.stderr)
+            self._generating = False
+            self._gen_step_iter = None
+
+    def _advance_generation(self) -> None:
+        """Advance generation animation by one step."""
+        if self._gen_step_iter is None:
+            self._generating = False
+            return
+        try:
+            grid_snapshot = next(self._gen_step_iter)
+            self._draw_from_grid(grid_snapshot)
+            self._flush()
+        except StopIteration:
+            self._generating = False
+            self._gen_step_iter = None
+            self.maze._generated = True
+            self._refresh()
+        except Exception as exc:
+            print(f"Generation animation error: {exc}", file=sys.stderr)
+            self._generating = False
+            self._gen_step_iter = None
+            self.maze._generated = True
+            self._refresh()
+
     def _flush(self) -> None:
         """Push the image buffer to the window."""
         if self._mlx and self._mlx_ptr and self._win_ptr and self._img_ptr:
@@ -263,9 +342,13 @@ class MlxRenderer:
                 random.randint(0, self.maze.width - 1),
                 random.randint(0, self.maze.height - 1),
             )
-            self.maze._generated = False
-            self.maze.generate()
-            self._refresh()
+            self._start_generation()
+
+        elif keycode == self.KEY_A:
+            self._algo_index = (self._algo_index + 1) % len(self.ALGORITHMS)
+            self._algorithm = self.ALGORITHMS[self._algo_index]
+            print(f" Algorithm: {self._algorithm}")
+            self._start_generation()
 
         elif keycode == self.KEY_P:
             self._show_path = not self._show_path
@@ -292,7 +375,9 @@ class MlxRenderer:
         Args:
             param: Unused parameter required by the MLX API.
         """
-        if self._animating:
+        if self._generating:
+            self._advance_generation()
+        elif self._animating:
             self._draw_path_step()
 
     def _on_close(self, param: object) -> None:
@@ -368,7 +453,8 @@ class MlxRenderer:
         self._refresh()
 
         print("=== A-Maze-ing (MLX) ===")
-        print("  R   - re-generate maze")
+        print(f"  R   - re-generate maze (algo: {self._algorithm})")
+        print("  A   - switch algorithm (dfs/kruskal)")
         print("  P   - toggle path")
         print("  C   - cycle wall colors")
         print("  B   - cycle '42' pattern colors")
