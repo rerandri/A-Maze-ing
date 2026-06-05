@@ -115,9 +115,10 @@ class AsciiRenderer:
         print("=== A-Maze-ing ===")
         while True:
             print("1. Re-generate a new maze")
-            print("2. Show/Hide path from entry to exit")
-            print("3. Rotate maze colors")
-            print("4. Quit\nChoice? (1-4): ", end="", flush=True)
+            print("2. Display maze")
+            print("3. Show/Hide path from entry to exit")
+            print("4. Rotate maze colors")
+            print("5. Quit\nChoice? (1-5): ", end="", flush=True)
             try:
                 answer: str = input()
             except (KeyboardInterrupt, EOFError):
@@ -137,16 +138,19 @@ class AsciiRenderer:
                 self.maze.generate()
                 self.display(show_path=self.show_path)
             elif answer == "2":
+                print("\033[H", end="", flush=True)
+                self.display()
+            elif answer == "3":
                 self.show_path = not self.show_path
                 self.display(show_path=self.show_path)
-            elif answer == "3":
+            elif answer == "4":
                 self._color_index = (self._color_index + 1) % len(
                     self.WALL_OPTIONS
                 )
                 self.EMPTY = self.WALL_OPTIONS[self._color_index]
                 self.display(show_path=self.show_path)
-            elif answer == "4":
+            elif answer == "5":
                 print("Bye!")
                 break
             else:
-                print("Invalid choice. Please enter a number from 1 to 4.")
+                print("Invalid choice. Please enter a number from 1 to 5.")

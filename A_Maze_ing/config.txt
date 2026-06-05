@@ -2,7 +2,7 @@ WIDTH=26
 HEIGHT=26
 ENTRY=1,1
 EXIT=25,25
-SEED=42
+SEED=0
 OUTPUT_FILE=maze.txt
 
 #A prototyper:
