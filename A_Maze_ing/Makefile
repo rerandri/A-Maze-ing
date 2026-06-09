@@ -35,9 +35,6 @@ lint-strict:
 	flake8 .
 	mypy . --strict
 
-test:
-	$(PYTHON) -m pytest -v
-
 build:
 	$(PYTHON) -m build
 	@echo "Package built in $(BUILD_DIR)/"
@@ -54,4 +51,4 @@ clean:
 	@echo "Cleaned"
 
 
-.PHONY: all install run lint lint-strict test build clean debug
+.PHONY: all install run lint lint-strict build clean debug
