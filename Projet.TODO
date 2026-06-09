@@ -2,45 +2,21 @@
 # A-Maze-ing — Projet TODO
 # ============================================================================
 
-## Exigences obligatoires (sujet IV)
+config.txt:
+ ---- gestion d'erreur:
+    *** sur le pattern 42
+      (13, 10),
+	  (13, 12),
+	  (13, 13),
+	  (13, 14)
 
-[x]- Creer une fenetre avec mlx  **ACHÉVÉ**
-[x]- [Bonus] animation lors du chemin  **ACHÉVÉ**
-[x]- Optionel: changement du color 42 pattern  **ACHÉVÉ** (touches B / menu 5)
-[x]- les murs ne doit jamais etre epais (non 3x3 ou plus)  **ACHÉVÉ** (DFS 1-cellule)
-[x]- [Config.txt] '#' ignorer ces lignes  **ACHÉVÉ**
-[x]- Verifie entry/exit doit etre differents entre eux  **ACHÉVÉ**
-[x]- [Config.txt] flag 'PERFECT' implementé  **ACHÉVÉ** (génération + parsing)
-[x]- Animation generation MLX  **ACHÉVÉ** (bonus)
-[x]- Algorithmes multiples (DFS + Kruskal)  **ACHÉVÉ** (bonus, touche A)
-[x]- [General instruction] III.3 Additional Guidelines  **ACHÉVÉ** (33 tests pytest)
+	  (14, 10),
+	  (14, 13),
+	  (14, 14)
 
-[...]
+    ***PERFECT mode = false
+	***mise a jour output file(exemple: save1, save2,)
 
-## Restant
 
-Rien — tout est couvert.
-
-## Rerandri
-
-<OK>- configuration parsing + output file
-<OK>- MLX window + keyboard hooks
-<OK>- MLX draw maze + path animation
-<OK>- 42 pattern color cycling (MLX)
-<OK>- pyproject.toml / build system
-<OK>- Kruskal algorithm implementation
-<OK>- generate_step() generator
-<OK>- MLX generation animation
-
-## Rirazafi
-
-<OK>- interface labyrinth Operationnel  **ACHÉVÉ**
-<OK>- interface MLX Operationnel  **ACHÉVÉ**
-<OK>- fix render bugs (doublons lignes terminal)  **ACHÉVÉ**
-<OK>- choix entre ASCII et MLX au lancement  **ACHÉVÉ**
-<OK>- PERFECT flag + extra passages  **ACHÉVÉ**
-<OK>- entry/exit validation  **ACHÉVÉ**
-<OK>- google-style docstrings  **ACHÉVÉ**
-<OK>- 42 pattern color cycling (ASCII)  **ACHÉVÉ**
-<OK>- README.md complet  **ACHÉVÉ**
-<OK>- DFS/Kruskal algorithm param  **ACHÉVÉ**
+animation:
+   -

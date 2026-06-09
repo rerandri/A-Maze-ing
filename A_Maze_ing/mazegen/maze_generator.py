@@ -1,7 +1,5 @@
-from collections import deque
 import random
 import sys
-from typing import Generator
 
 
 class MazeGenerator:
@@ -102,66 +100,19 @@ class MazeGenerator:
             return True
         return (self.grid[y][x] & direction) != 0
 
-    def get_solution(self) -> list[str]:
-        """Return a copy of the current solution path."""
-        self._require_generated()
-        return list(self._solution)
-
     def to_hex_lines(self) -> list[str]:
         """Serialize the maze grid into hexadecimal text lines."""
         self._require_generated()
         return ["".join(f"{cell:X}" for cell in row) for row in self.grid]
 
-    def generate(self, algorithm: str = "dfs") -> None:
-        """Generate maze structure and compute the shortest solution path.
-
-        Args:
-            algorithm: Generation algorithm to use ("dfs" or "kruskal").
-
-        If perfect is False, extra walls are removed after generation to create
-        loops and alternative paths (imperfect maze).
-        """
+    def generate(self) -> None:
+        """Generate maze structure and compute the shortest solution path."""
         self._init_grid()
         random.seed(self.seed)
         self._carve_pattern42()
-        if algorithm == "dfs":
-            self._generate_dfs()
-        elif algorithm == "kruskal":
-            self._generate_kruskal()
-        else:
-            raise ValueError(f"Unknown algorithm: {algorithm}")
+        self._generate_dfs()
         if not self.perfect:
             self._add_extra_passages()
-        self._solve_bfs()
-        self._generated = True
-
-    def generate_step(self, algorithm: str = "dfs"
-                      ) -> Generator[list[list[int]], None, None]:
-        """Generator that yields a grid copy after each wall removal.
-
-        Each yielded value is a deep copy of self.grid, suitable for
-        animating the maze-building process step by step.
-
-        Args:
-            algorithm: Generation algorithm ("dfs" or "kruskal").
-
-        Yields:
-            A snapshot of the grid after each wall removal.
-        """
-        self._init_grid()
-        random.seed(self.seed)
-        self._carve_pattern42()
-        yield self._grid_copy()
-        if algorithm == "dfs":
-            yield from self._generate_dfs_step()
-        elif algorithm == "kruskal":
-            yield from self._generate_kruskal_step()
-        else:
-            raise ValueError(f"Unknown algorithm: {algorithm}")
-        if not self.perfect:
-            self._add_extra_passages()
-            yield self._grid_copy()
-        self._solve_bfs()
         self._generated = True
 
     def _carve_pattern42(self) -> None:
@@ -221,46 +172,9 @@ class MazeGenerator:
             else:
                 stack.pop()
 
-    def _generate_dfs_step(self) -> Generator[list[list[int]], None, None]:
-        """DFS generator that yields after each wall removal."""
-        stack: list[tuple[int, int]] = [self.entry]
-        visited: set[tuple[int, int]] = {self.entry}
-
-        while stack:
-            current_x, current_y = stack[-1]
-            neighbors = []
-            for direction, (dx, dy) in self.DELTA.items():
-                nx = current_x + dx
-                ny = current_y + dy
-                if (
-                    self._in_bounds(nx, ny)
-                    and (nx, ny) not in visited
-                    and (nx, ny) not in self._blocked
-                ):
-                    neighbors.append((nx, ny, direction))
-
-            if neighbors:
-                next_x, next_y, direction = random.choice(neighbors)
-                self._remove_wall(
-                    current_x,
-                    current_y,
-                    direction,
-                    next_x,
-                    next_y,
-                    self.OPPOSITE[direction]
-                )
-                visited.add((next_x, next_y))
-                stack.append((next_x, next_y))
-                yield self._grid_copy()
-            else:
-                stack.pop()
 
     def _add_extra_passages(self) -> None:
-        """Remove additional walls to create loops (imperfect maze).
-
-        For each cell, with 50% probability, remove a wall to a random neighbor
-        if that wall is still present and the neighbor is not blocked.
-        """
+        """Remove additional walls to create loops (imperfect maze)."""
         for y in range(self.height):
             for x in range(self.width):
                 if (x, y) in self._blocked:
@@ -281,121 +195,3 @@ class MazeGenerator:
                         )
                         break  # un seul mur supprimé par cellule
 
-    def _generate_kruskal(self) -> None:
-        """Generate passages using Kruskal's algorithm.
-
-        Lists all walls between adjacent cells, shuffles them randomly,
-        then removes each wall if its two cells belong to different
-        connected components (union-find).  This produces a perfect maze
-        (spanning tree).
-        """
-        edges: list[tuple[int, int, int, int, int, int]] = []
-        for y in range(self.height):
-            for x in range(self.width):
-                if (x, y) in self._blocked:
-                    continue
-                if x + 1 < self.width and (x + 1, y) not in self._blocked:
-                    edges.append((x, y, self.EAST, x + 1, y, self.WEST))
-                if y + 1 < self.height and (x, y + 1) not in self._blocked:
-                    edges.append((x, y, self.SOUTH, x, y + 1, self.NORTH))
-
-        random.shuffle(edges)
-
-        parent: dict[tuple[int, int], tuple[int, int]] = {}
-        for y in range(self.height):
-            for x in range(self.width):
-                if (x, y) not in self._blocked:
-                    parent[(x, y)] = (x, y)
-
-        def _find(p: tuple[int, int]) -> tuple[int, int]:
-            while parent[p] != p:
-                parent[p] = parent[parent[p]]
-                p = parent[p]
-            return p
-
-        def _union(a: tuple[int, int], b: tuple[int, int]) -> None:
-            ra, rb = _find(a), _find(b)
-            if ra != rb:
-                parent[rb] = ra
-
-        for x1, y1, d1, x2, y2, d2 in edges:
-            if _find((x1, y1)) != _find((x2, y2)):
-                self._remove_wall(x1, y1, d1, x2, y2, d2)
-                _union((x1, y1), (x2, y2))
-
-    def _generate_kruskal_step(
-        self,
-    ) -> Generator[list[list[int]], None, None]:
-        """Kruskal generator that yields after each wall removal."""
-        edges: list[tuple[int, int, int, int, int, int]] = []
-        for y in range(self.height):
-            for x in range(self.width):
-                if (x, y) in self._blocked:
-                    continue
-                if x + 1 < self.width and (x + 1, y) not in self._blocked:
-                    edges.append((x, y, self.EAST, x + 1, y, self.WEST))
-                if y + 1 < self.height and (x, y + 1) not in self._blocked:
-                    edges.append((x, y, self.SOUTH, x, y + 1, self.NORTH))
-
-        random.shuffle(edges)
-
-        parent: dict[tuple[int, int], tuple[int, int]] = {}
-        for y in range(self.height):
-            for x in range(self.width):
-                if (x, y) not in self._blocked:
-                    parent[(x, y)] = (x, y)
-
-        def _find(p: tuple[int, int]) -> tuple[int, int]:
-            while parent[p] != p:
-                parent[p] = parent[parent[p]]
-                p = parent[p]
-            return p
-
-        def _union(a: tuple[int, int], b: tuple[int, int]) -> None:
-            ra, rb = _find(a), _find(b)
-            if ra != rb:
-                parent[rb] = ra
-
-        for x1, y1, d1, x2, y2, d2 in edges:
-            if _find((x1, y1)) != _find((x2, y2)):
-                self._remove_wall(x1, y1, d1, x2, y2, d2)
-                _union((x1, y1), (x2, y2))
-                yield self._grid_copy()
-
-    def _solve_bfs(self) -> None:
-        """Find the shortest path from entry to exit using BFS."""
-        self._solution = []
-
-        queue: deque[tuple[int, int]] = deque([self.entry])
-        parent: dict[tuple[int, int], tuple[tuple[int, int], int]] = {
-            self.entry: ((-1, -1), 0)}
-
-        while queue:
-            x, y = queue.popleft()
-
-            if (x, y) == self.exit:
-                path: list[str] = []
-                curr = self.exit
-                while curr != self.entry:
-                    prev, direction = parent[curr]
-                    direction_names = {
-                        self.NORTH: "N",
-                        self.SOUTH: "S",
-                        self.EAST: "E",
-                        self.WEST: "W"
-                    }
-                    path.append(direction_names.get(direction, "_"))
-                    curr = prev
-                path.reverse()
-                self._solution = path
-                return
-
-            for direction, (dx, dy) in self.DELTA.items():
-                nx, ny = x + dx, y + dy
-                if (
-                    self._in_bounds(nx, ny)
-                    and not self._has_wall_internal(x, y, direction)
-                    and (nx, ny) not in parent
-                ):
-                    parent[(nx, ny)] = ((x, y), direction)
-                    queue.append((nx, ny))

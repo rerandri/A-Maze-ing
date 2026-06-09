@@ -1,26 +1,9 @@
 import sys
 
-from display import AsciiRenderer, MlxRenderer
-from mazegen import MazeGenerator, parse_config, read_config_file
-
-
-def _choose_renderer(maze: MazeGenerator) -> AsciiRenderer | MlxRenderer:
-    """Ask the user which renderer to use."""
-    print("Choose renderer:")
-    print("  1. Terminal (ASCII)")
-    print("  2. Graphical (MLX)")
-    while True:
-        try:
-            choice = input("Choice (1 or 2): ").strip()
-        except (KeyboardInterrupt, EOFError):
-            print("\nUsing terminal renderer by default.")
-            return AsciiRenderer(maze)
-        if choice == "1":
-            return AsciiRenderer(maze)
-        if choice == "2":
-            return MlxRenderer(maze)
-        print("Invalid choice. Enter 1 or 2.")
-
+from display import AsciiRenderer
+from mazegen import MazeGenerator
+from parser import read_config_file, parse_config
+from solve import Solve_bfs
 
 def main(argv: list[str] | None = None) -> None:
     """Generate a maze from a configuration file."""
@@ -44,25 +27,23 @@ def main(argv: list[str] | None = None) -> None:
             perfect=raw_config["PERFECT"],
         )
         maze.generate()
+        solve = Solve_bfs(maze)
         output_lines: list[str] = [
             *maze.to_hex_lines(),
             "",
             f"{maze.entry[0]},{maze.entry[1]}",
             f"{maze.exit[0]},{maze.exit[1]}",
-            "".join(maze.get_solution()),
+            "".join(solve.get_solution()),
         ]
         try:
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write("\n".join(output_lines) + "\n")
             print(f"Maze generated and saved to '{output_file}'")
-            renderer = _choose_renderer(maze)
-            if isinstance(renderer, MlxRenderer):
-                renderer.run()
-            else:
-                try:
-                    renderer.run_iterative()
-                except (KeyboardInterrupt, EOFError):
-                    print("\nOperation cancelled on Renderer.")
+            renderer = AsciiRenderer(maze)
+            try:
+                renderer.run_iterative()
+            except (KeyboardInterrupt, EOFError):
+                print("\nOperation cancelled on Renderer.")
         except OSError as err:
             print(f"Error writing to file: {err}", file=sys.stderr)
             sys.exit(1)

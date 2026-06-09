@@ -13,7 +13,7 @@ PIP = pip3
 MAIN = a_maze_ing.py
 CONFIG = config.txt
 BUILD_DIR = dist
-MLX_SRC ?= mlx_CLXV-2.2
+MLX_SRC ?= mlx_CLXV
 MLX_TGZ ?= $(MLX_SRC).tgz
 
 all: install

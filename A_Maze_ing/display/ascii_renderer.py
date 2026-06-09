@@ -4,6 +4,7 @@ import sys
 import time
 
 from mazegen import MazeGenerator
+from solve import Solve_bfs
 
 
 class Color:
@@ -48,6 +49,7 @@ class AsciiRenderer:
             maze: A fully generated MazeGenerator instance.
         """
         self.maze: MazeGenerator = maze
+        self.solve = Solve_bfs(maze)
         self._color_index: int = 0
         self._blocked42_index: int = 0
         self.show_path: bool = False
@@ -150,7 +152,7 @@ class AsciiRenderer:
             return
 
         curr_x, curr_y = self.maze.entry
-        for move in self.maze.get_solution():
+        for move in self.solve.get_solution():
             if move == "N":
                 pixels[2 * curr_y][2 * curr_x + 1] = self.PATH
                 curr_y -= 1
