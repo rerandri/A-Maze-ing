@@ -172,7 +172,6 @@ class MazeGenerator:
             else:
                 stack.pop()
 
-
     def _add_extra_passages(self) -> None:
         """Remove additional walls to create loops (imperfect maze)."""
         for y in range(self.height):
@@ -194,4 +193,3 @@ class MazeGenerator:
                             nx, ny, self.OPPOSITE[direction],
                         )
                         break  # un seul mur supprimé par cellule
-

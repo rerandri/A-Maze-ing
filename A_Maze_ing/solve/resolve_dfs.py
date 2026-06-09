@@ -1,6 +1,7 @@
 from collections import deque
 from mazegen import MazeGenerator
 
+
 class Solve_bfs:
     NORTH: int = 1
     EAST: int = 2
@@ -57,5 +58,5 @@ class Solve_bfs:
         return self._solution
 
     def get_solution(self) -> list[str]:
-        solution_path : list[str] = self._solve_bfs()
+        solution_path: list[str] = self._solve_bfs()
         return solution_path
