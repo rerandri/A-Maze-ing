@@ -17,6 +17,7 @@ config.txt:
     ***PERFECT mode = false
 	***mise a jour output file(exemple: save1, save2,)
 
+----gerer la fenetre de terminal:
 
 animation:
    -
