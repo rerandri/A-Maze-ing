@@ -12,7 +12,6 @@ PYTHON = python3
 PIP = pip3
 MAIN = a_maze_ing.py
 CONFIG = config.txt
-BUILD_DIR = dist
 
 
 all: install
@@ -37,7 +36,6 @@ lint-strict:
 
 build:
 	$(PYTHON) -m build
-	@echo "Package built in $(BUILD_DIR)/"
 
 debug:
 	$(PYTHON) -m pdb $(MAIN) $(CONFIG)
