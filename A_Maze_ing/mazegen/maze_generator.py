@@ -192,4 +192,4 @@ class MazeGenerator:
                             x, y, direction,
                             nx, ny, self.OPPOSITE[direction],
                         )
-                        break  # un seul mur supprimé par cellule
+                    break

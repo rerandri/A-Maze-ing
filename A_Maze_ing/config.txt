@@ -3,7 +3,7 @@ HEIGHT=25
 ENTRY=11,24
 EXIT=10,10
 SEED=0
-OUTPUT_FILE=./OUTPUT_FILE/path.txt
+OUTPUT_FILE=maze.txt
 
 #A prototyper:
-PERFECT=True
+PERFECT=False
