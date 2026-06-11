@@ -1,4 +1,4 @@
-WIDTH=25
+WIDTH=50
 HEIGHT=25
 ENTRY=11,24
 EXIT=10,10
@@ -6,4 +6,4 @@ SEED=0
 OUTPUT_FILE=maze.txt
 
 #A prototyper:
-PERFECT=False
+PERFECT=True

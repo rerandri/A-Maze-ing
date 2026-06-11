@@ -38,9 +38,9 @@ class AsciiRenderer:
     EMPTY: str = WALL_OPTIONS[0]
     BACKGROUND: str = C.BG_BLACK + BLOCK_CHAR
     BLOCKED: str = BLOCKED42_OPTIONS[0]
-    PATH: str = C.BG_GREEN + BLOCK_CHAR
-    START: str = C.BG_BLUE + BLOCK_CHAR
-    END: str = C.BG_RED + BLOCK_CHAR
+    PATH: str = C.BG_GREEN + "/\\" + C.RESET
+    START: str = C.BG_BLUE + "OO" + C.RESET
+    END: str = C.BG_RED + "OO" + C.RESET
 
     def __init__(self, maze: MazeGenerator) -> None:
         """Initialize the renderer with a generated maze instance.
@@ -49,6 +49,7 @@ class AsciiRenderer:
             maze: A fully generated MazeGenerator instance.
         """
         self.maze: MazeGenerator = maze
+        self._clamp_maze_to_terminal()
         self.solve = Solve_bfs(maze)
         self._color_index: int = 0
         self._blocked42_index: int = 0
@@ -57,9 +58,9 @@ class AsciiRenderer:
         self.EMPTY: str = self.WALL_OPTIONS[0]
         self.BACKGROUND: str = self.C.BG_BLACK + self.BLOCK_CHAR
         self.BLOCKED: str = self.BLOCKED42_OPTIONS[0]
-        self.PATH: str = self.C.BG_GREEN + self.BLOCK_CHAR
-        self.START: str = self.C.BG_BLUE + self.BLOCK_CHAR
-        self.END: str = self.C.BG_RED + self.BLOCK_CHAR
+        self.PATH: str = self.PATH
+        self.START: str = self.START
+        self.END: str = self.END
 
     def _build_pixels(self) -> list[list[str]]:
         """Build a 2D character matrix representing the maze.
@@ -100,6 +101,40 @@ class AsciiRenderer:
         needed_lines = self.maze.height * 2 + 1 + 2   # +2 for margin
         return term_cols >= needed_cols and term_lines >= needed_lines
 
+    def _clamp_maze_to_terminal(self) -> None:
+        """Shrink maze dimensions so it fits in the current terminal.
+
+        The maze is resized just enough to satisfy ``_maze_fits()``.
+        If the maze was already generated, it is regenerated with the
+        same seed after resizing.
+        """
+        term_cols, term_lines = shutil.get_terminal_size(
+            fallback=(80, 24)
+        )
+        max_width: int = max(1, (term_cols - 2) // 4)
+        max_height: int = max(1, (term_lines - 3) // 2)
+
+        old_w, old_h = self.maze.width, self.maze.height
+        self.maze.width = min(self.maze.width, max_width)
+        self.maze.height = min(self.maze.height, max_height)
+
+        if (self.maze.width, self.maze.height) == (old_w, old_h):
+            return
+
+        self.maze.entry = (
+            min(self.maze.entry[0], self.maze.width - 1),
+            min(self.maze.entry[1], self.maze.height - 1),
+        )
+        self.maze.exit = (
+            min(self.maze.exit[0], self.maze.width - 1),
+            min(self.maze.exit[1], self.maze.height - 1),
+        )
+
+        if self.maze._generated:
+            self.maze._generated = False
+            self.maze._blocked.clear()
+            self.maze.generate()
+
     def _flush_render(self, pixels: list[list[str]]) -> None:
         """Write the full pixel grid to stdout in a single atomic write.
 
@@ -110,7 +145,6 @@ class AsciiRenderer:
         """
         output = "\n".join("".join(row) for row in pixels)
         if self._last_render_lines > 0:
-            # Move up N lines then erase to end of screen
             preamble = f"\033[{self._last_render_lines}A\033[0J"
         else:
             preamble = ""
@@ -189,6 +223,7 @@ class AsciiRenderer:
                 print("\nOperation cancelled.")
                 break
             if answer == "1":
+                self._clamp_maze_to_terminal()
                 self.maze.seed = random.randint(0, 2**32)
                 self.maze.entry = (
                     random.randint(0, self.maze.width - 1),

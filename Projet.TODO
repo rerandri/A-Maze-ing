@@ -14,10 +14,11 @@ config.txt:
 	  (14, 13),
 	  (14, 14)
 
-    ***PERFECT mode = false
 	***mise a jour output file(exemple: save1, save2,)
 
 ----gerer la fenetre de terminal:
 
 animation:
    -
+
+    [CORRIGER ok] ***PERFECT mode = false
