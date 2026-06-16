@@ -10,7 +10,7 @@ from solve import Solve_bfs
 class Color:
     RESET = "\033[0m"
     BG_WHITE = "\033[107m"
-    BG_BLACK = "\033[100m"
+    BG_BLACK = "\033[0m"
     BG_RED = "\033[41m"
     BG_GREEN = "\033[42m"
     BG_BLUE = "\033[44m"
@@ -22,29 +22,29 @@ class AsciiRenderer:
     """Render a maze using terminal-friendly characters."""
     C = Color()
     BLOCK_CHAR: str = "  " + C.RESET
+    BLOCK_WALL: str = "🧱" + C.RESET
     WALL_OPTIONS = [
-        C.BG_WHITE + BLOCK_CHAR,
-        C.BG_CYAN + BLOCK_CHAR,
-        C.BG_PURPLE + BLOCK_CHAR,
+        C.BG_CYAN + BLOCK_WALL,
+        C.BG_WHITE + BLOCK_WALL,
+        C.BG_PURPLE + BLOCK_WALL,
     ]
 
     BLOCKED42_OPTIONS = [
-        C.BG_PURPLE + BLOCK_CHAR,
-        C.BG_RED + BLOCK_CHAR,
-        C.BG_CYAN + BLOCK_CHAR,
-        C.BG_GREEN + BLOCK_CHAR,
+        C.BG_PURPLE + "⛲" + C.RESET,
+        C.BG_RED + "⛲" + C.RESET,
+        C.BG_CYAN + "⛲" + C.RESET,
+        C.BG_GREEN + "⛲" + C.RESET,
     ]
 
     EMPTY: str = WALL_OPTIONS[0]
     BACKGROUND: str = C.BG_BLACK + BLOCK_CHAR
     BLOCKED: str = BLOCKED42_OPTIONS[0]
-    PATH: str = C.BG_GREEN + "/\\" + C.RESET
-    START: str = C.BG_BLUE + "OO" + C.RESET
-    END: str = C.BG_RED + "OO" + C.RESET
+    PATH: str = C.BG_GREEN + "  " + C.RESET
+    START: str = C.BG_BLUE + "📦" + C.RESET
+    END: str = C.BG_RED + "🏠" + C.RESET
 
     def __init__(self, maze: MazeGenerator) -> None:
         """Initialize the renderer with a generated maze instance.
-
         Args:
             maze: A fully generated MazeGenerator instance.
         """
@@ -97,8 +97,8 @@ class AsciiRenderer:
     def _maze_fits(self) -> bool:
         """Check whether the maze fits in the current terminal window."""
         term_cols, term_lines = shutil.get_terminal_size(fallback=(80, 24))
-        needed_cols = (self.maze.width * 2 + 1) * 2  # each cell = 2 chars wide
-        needed_lines = self.maze.height * 2 + 1 + 2   # +2 for margin
+        needed_cols = (self.maze.width * 2 + 1) * 2
+        needed_lines = self.maze.height * 2 + 1 + 2
         return term_cols >= needed_cols and term_lines >= needed_lines
 
     def _clamp_maze_to_terminal(self) -> None:
@@ -178,7 +178,6 @@ class AsciiRenderer:
         pixels[2 * entry_y + 1][2 * entry_x + 1] = self.START
         pixels[2 * exit_y + 1][2 * exit_x + 1] = self.END
 
-        # First frame: reset render state and do a clean print
         self._last_render_lines = 0
         self._flush_render(pixels)
 
@@ -201,7 +200,7 @@ class AsciiRenderer:
                 curr_x -= 1
             pixels[2 * curr_y + 1][2 * curr_x + 1] = self.PATH
             self._flush_render(pixels)
-            time.sleep(0.02)
+            time.sleep(0.05)
 
         # Restore exit marker after path overwrites it
         pixels[2 * exit_y + 1][2 * exit_x + 1] = self.END
@@ -251,6 +250,7 @@ class AsciiRenderer:
                 self._blocked42_index = (
                     self._blocked42_index + 1
                 ) % len(self.BLOCKED42_OPTIONS)
+
                 self.BLOCKED = self.BLOCKED42_OPTIONS[self._blocked42_index]
                 self.display(show_path=self.show_path)
             elif answer == "6":

@@ -17,10 +17,10 @@ CONFIG = config.txt
 all: install
 
 install:
-	$(PIP) install --break-system-packages flake8 mypy build pytest
+	$(PIP) install --break-system-packages flake8 mypy build
 
 run:
-	$(PYTHON) $(MAIN) $(CONFIG)
+	ft_lock
 
 lint:
 	flake8 .
