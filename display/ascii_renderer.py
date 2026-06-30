@@ -7,41 +7,31 @@ from mazegen import MazeGenerator
 from solve import Solve_bfs
 
 
-class Color:
-    RESET = "\033[0m"
-    BG_WHITE = "\033[107m"
-    BG_BLACK = "\033[0m"
-    BG_RED = "\033[41m"
-    BG_GREEN = "\033[42m"
-    BG_BLUE = "\033[44m"
-    BG_CYAN = "\033[46m"
-    BG_PURPLE = "\033[45m"
-
-
 class AsciiRenderer:
     """Render a maze using terminal-friendly characters."""
-    C = Color()
-    BLOCK_CHAR: str = "  " + C.RESET
-    BLOCK_WALL: str = "🧱" + C.RESET
+
+    BLOCK_CHAR: str = "➖"
+    BLOCK_WALL: str = "🟥"
     WALL_OPTIONS = [
-        C.BG_CYAN + BLOCK_WALL,
-        C.BG_WHITE + BLOCK_WALL,
-        C.BG_PURPLE + BLOCK_WALL,
+        "🟩",
+        "🟦",
+        "🟨",
+        "🟧"
     ]
 
     BLOCKED42_OPTIONS = [
-        C.BG_PURPLE + "⛲" + C.RESET,
-        C.BG_RED + "⛲" + C.RESET,
-        C.BG_CYAN + "⛲" + C.RESET,
-        C.BG_GREEN + "⛲" + C.RESET,
+        "⬜",
+        "⬛",
+        "🟪",
+        "🟫",
     ]
 
     EMPTY: str = WALL_OPTIONS[0]
-    BACKGROUND: str = C.BG_BLACK + BLOCK_CHAR
+    BACKGROUND: str = BLOCK_CHAR
     BLOCKED: str = BLOCKED42_OPTIONS[0]
-    PATH: str = C.BG_GREEN + "  " + C.RESET
-    START: str = C.BG_BLUE + "📦" + C.RESET
-    END: str = C.BG_RED + "🏠" + C.RESET
+    PATH: str = "🛜 "
+    START: str = "👽"
+    END: str = "🛸"
 
     def __init__(self, maze: MazeGenerator) -> None:
         """Initialize the renderer with a generated maze instance.
@@ -56,7 +46,7 @@ class AsciiRenderer:
         self.show_path: bool = False
         self._last_render_lines: int = 0
         self.EMPTY: str = self.WALL_OPTIONS[0]
-        self.BACKGROUND: str = self.C.BG_BLACK + self.BLOCK_CHAR
+        self.BACKGROUND: str = self.BLOCK_CHAR
         self.BLOCKED: str = self.BLOCKED42_OPTIONS[0]
         self.PATH: str = self.PATH
         self.START: str = self.START
@@ -200,26 +190,34 @@ class AsciiRenderer:
                 curr_x -= 1
             pixels[2 * curr_y + 1][2 * curr_x + 1] = self.PATH
             self._flush_render(pixels)
-            time.sleep(0.05)
+            time.sleep(0.01)
 
-        # Restore exit marker after path overwrites it
         pixels[2 * exit_y + 1][2 * exit_x + 1] = self.END
         self._flush_render(pixels)
 
     def run_iterative(self) -> None:
         """Run the interactive terminal menu for maze actions."""
-        print("=== A-Maze-ing ===")
         while True:
-            print("1. Re-generate a new maze")
-            print("2. Display maze")
-            print("3. Show/Hide path from entry to exit")
-            print("4. Rotate maze colors")
-            print("5. Cycle '42' pattern colors")
-            print("6. Quit\nChoice? (1-6): ", end="", flush=True)
+            print("=== A-Maze-ing ===")
+            enter = "👽"
+            exit = "🛸"
+            path = "🛜"
+            print(
+                "Info for maze:\n"
+                f"  Enter: {enter:<15}\n"
+                f"  Exit : {exit:<15}\n"
+                f"  Path : {path:<15}\n"    
+                )
+            print("[1]. Re-generate a new maze")
+            print("[2]. Display maze")
+            print("[3]. Show/Hide path from entry to exit")
+            print("[4]. Rotate maze colors")
+            print("[5]. Cycle '42' pattern colors")
+            print("[6]. Quit\nChoice? (1-6): ", end="", flush=True)
             try:
                 answer: str = input()
             except (KeyboardInterrupt, EOFError):
-                print("\nOperation cancelled.")
+                print("\nOperation cancelled.\n")
                 break
             if answer == "1":
                 self._clamp_maze_to_terminal()

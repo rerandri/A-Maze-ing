@@ -1,13 +1,3 @@
-#make install      # installe flake8, mypy, build, pytest
-#make run          # python3 a_maze_ing.py config.txt
-#make debug        # pdb
-#make lint         # flake8 + mypy standard
-#make lint-strict  # flake8 + mypy --strict
-#make test         # pytest
-#make build        # génère le .whl
-#make mlx-install  # compile et installe MiniLibX
-#make clean        # nettoie __pycache__, dist, etc.
-
 PYTHON = python3
 PIP = pip3
 MAIN = a_maze_ing.py
