@@ -43,7 +43,7 @@ def main(argv: list[str] | None = None) -> None:
             try:
                 renderer.run_iterative()
             except (KeyboardInterrupt, EOFError):
-                print("\nOperation cancelled on Renderer.")
+                print("\nOperation cancelled on Renderer.\n")
         except OSError as err:
             print(f"Error writing to file: {err}", file=sys.stderr)
             sys.exit(1)

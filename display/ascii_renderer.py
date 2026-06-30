@@ -39,6 +39,7 @@ class AsciiRenderer:
             maze: A fully generated MazeGenerator instance.
         """
         self.maze: MazeGenerator = maze
+        self.delay: float = 0.0
         self._clamp_maze_to_terminal()
         self.solve = Solve_bfs(maze)
         self._color_index: int = 0
@@ -151,6 +152,7 @@ class AsciiRenderer:
 
         Args:
             show_path: Whether to animate the solution path.
+            delay: The delay between steps in seconds.
         """
         self.show_path = show_path
 
@@ -190,30 +192,35 @@ class AsciiRenderer:
                 curr_x -= 1
             pixels[2 * curr_y + 1][2 * curr_x + 1] = self.PATH
             self._flush_render(pixels)
-            time.sleep(0.01)
+            time.sleep(self.delay)
 
         pixels[2 * exit_y + 1][2 * exit_x + 1] = self.END
         self._flush_render(pixels)
 
     def run_iterative(self) -> None:
         """Run the interactive terminal menu for maze actions."""
-        while True:
-            print("=== A-Maze-ing ===")
+        def header():
             enter = "👽"
             exit = "🛸"
             path = "🛜"
             print(
                 "Info for maze:\n"
-                f"  Enter: {enter:<15}\n"
-                f"  Exit : {exit:<15}\n"
-                f"  Path : {path:<15}\n"    
-                )
+                f"  Enter           : {enter:<15}\n"
+                f"  Exit            : {exit:<15}\n"
+                f"  Path            : {path:<15}\n"    
+                f"  Animation delay : {self.delay:<15}")
+            print(
+                "For delay, type 'delay=<seconds>' "
+                "(e.g., delay=0.5) and press Enter.\n")
+        header()
+        while True:
+            print("=== A-Maze-ing ===")
             print("[1]. Re-generate a new maze")
             print("[2]. Display maze")
             print("[3]. Show/Hide path from entry to exit")
             print("[4]. Rotate maze colors")
             print("[5]. Cycle '42' pattern colors")
-            print("[6]. Quit\nChoice? (1-6): ", end="", flush=True)
+            print("[6]. Quit\nChoice? : ", end="", flush=True)
             try:
                 answer: str = input()
             except (KeyboardInterrupt, EOFError):
@@ -251,6 +258,22 @@ class AsciiRenderer:
 
                 self.BLOCKED = self.BLOCKED42_OPTIONS[self._blocked42_index]
                 self.display(show_path=self.show_path)
+            elif answer.startswith("delay="):
+                try:
+                    tmp_delay = float(answer.split("=")[1])
+                    if tmp_delay < 0:
+                        raise ValueError("Delay cannot be negative.")
+                    elif tmp_delay > 1:
+                        raise ValueError(
+                            "Warning: Delay is quite long. Consider using a smaller "
+                            "value for better experience."
+                        )
+                    else:
+                        self.delay = tmp_delay
+                        print(f"Animation delay set to {self.delay} seconds.\n")
+                        header()
+                except (ValueError, IndexError):
+                    print("Invalid delay value. Please enter a valid number.\n")
             elif answer == "6":
                 print("Bye!")
                 break
