@@ -33,6 +33,8 @@ class AsciiRenderer:
     START: str = "👽"
     END: str = "🛸"
 
+    ANIM_DURATION: float = 1.5
+
     def __init__(self, maze: MazeGenerator) -> None:
         """Initialize the renderer with a generated maze instance.
         Args:
@@ -45,6 +47,7 @@ class AsciiRenderer:
         self._color_index: int = 0
         self._blocked42_index: int = 0
         self.show_path: bool = False
+        self.animate_reveal: bool = True
         self._last_render_lines: int = 0
         self.EMPTY: str = self.WALL_OPTIONS[0]
         self.BACKGROUND: str = self.BLOCK_CHAR
@@ -143,7 +146,41 @@ class AsciiRenderer:
         sys.stdout.flush()
         self._last_render_lines = len(pixels)
 
-    def display(self, show_path: bool = False) -> None:
+    @staticmethod
+    def _reveal_chunk_size(maze_width: int) -> int:
+        """Adaptive chunk size: wider mazes reveal more rows per frame."""
+        thresholds = [(130, 64), (100, 32), (80, 16), (60, 8), (40, 4)]
+        for limit, chunk in thresholds:
+            if maze_width >= limit:
+                return chunk
+        return 1
+
+    def _animate_reveal(self, pixels: list[list[str]]) -> None:
+        """Animate the maze appearing row by row.
+
+        Groups pixel rows into chunks for performance — wider mazes
+        reveal more rows per frame so the total frame count stays
+        roughly constant.
+        """
+        total_rows = len(pixels)
+        chunk = self._reveal_chunk_size(self.maze.width)
+        steps = (total_rows + chunk - 1) // chunk
+        step_delay = self.ANIM_DURATION / steps
+
+        canvas = [
+            [self.EMPTY for _ in range(len(pixels[0]))] for _ in range(total_rows)
+        ]
+
+        for i in range(0, total_rows, chunk):
+            end = min(i + chunk, total_rows)
+            for r in range(i, end):
+                canvas[r] = pixels[r]
+            self._flush_render(canvas)
+            time.sleep(step_delay)
+
+        self._flush_render(pixels)
+
+    def display(self, show_path: bool = False, animate: bool | None = None) -> None:
         """Display the maze and optionally animate the solution path.
 
         If the terminal is too small, prints an error in red and returns.
@@ -152,9 +189,12 @@ class AsciiRenderer:
 
         Args:
             show_path: Whether to animate the solution path.
-            delay: The delay between steps in seconds.
+            animate: Whether to animate the maze reveal. Defaults to
+                     self.animate_reveal if not set.
         """
         self.show_path = show_path
+        if animate is None:
+            animate = self.animate_reveal
 
         if not self._maze_fits():
             print(
@@ -171,7 +211,11 @@ class AsciiRenderer:
         pixels[2 * exit_y + 1][2 * exit_x + 1] = self.END
 
         self._last_render_lines = 0
-        self._flush_render(pixels)
+
+        if animate:
+            self._animate_reveal(pixels)
+        else:
+            self._flush_render(pixels)
 
         if not show_path:
             return
@@ -217,10 +261,11 @@ class AsciiRenderer:
             print("=== A-Maze-ing ===")
             print("[1]. Re-generate a new maze")
             print("[2]. Display maze")
-            print("[3]. Show/Hide path from entry to exit")
-            print("[4]. Rotate maze colors")
-            print("[5]. Cycle '42' pattern colors")
-            print("[6]. Quit\nChoice? : ", end="", flush=True)
+            print(f"[3]. {'Hide' if self.show_path else 'Show'} path from entry to exit")
+            print(f"[4]. Toggle reveal animation  {'[ON]' if self.animate_reveal else '[OFF]'}")
+            print("[5]. Rotate maze colors")
+            print("[6]. Cycle '42' pattern colors")
+            print("[7]. Quit\nChoice? : ", end="", flush=True)
             try:
                 answer: str = input()
             except (KeyboardInterrupt, EOFError):
@@ -229,35 +274,32 @@ class AsciiRenderer:
             if answer == "1":
                 self._clamp_maze_to_terminal()
                 self.maze.seed = random.randint(0, 2**32)
-                self.maze.entry = (
-                    random.randint(0, self.maze.width - 1),
-                    random.randint(0, self.maze.height - 1),
-                )
-                self.maze.exit = (
-                    random.randint(0, self.maze.width - 1),
-                    random.randint(0, self.maze.height - 1),
-                )
                 self.maze._generated = False
                 self.maze.generate()
                 self.display(show_path=self.show_path)
             elif answer == "2":
-                self.display()
+                self.display(show_path=self.show_path)
             elif answer == "3":
                 self.show_path = not self.show_path
-                self.display(show_path=self.show_path)
+                self.display(show_path=self.show_path, animate=False)
             elif answer == "4":
+                self.animate_reveal = not self.animate_reveal
+                print(
+                    f"Reveal animation {'enabled' if self.animate_reveal else 'disabled'}.\n"
+                )
+            elif answer == "5":
                 self._color_index = (self._color_index + 1) % len(
                     self.WALL_OPTIONS
                 )
                 self.EMPTY = self.WALL_OPTIONS[self._color_index]
-                self.display(show_path=self.show_path)
-            elif answer == "5":
+                self.display(show_path=self.show_path, animate=False)
+            elif answer == "6":
                 self._blocked42_index = (
                     self._blocked42_index + 1
                 ) % len(self.BLOCKED42_OPTIONS)
 
                 self.BLOCKED = self.BLOCKED42_OPTIONS[self._blocked42_index]
-                self.display(show_path=self.show_path)
+                self.display(show_path=self.show_path, animate=False)
             elif answer.startswith("delay="):
                 try:
                     tmp_delay = float(answer.split("=")[1])
@@ -274,8 +316,8 @@ class AsciiRenderer:
                         header()
                 except (ValueError, IndexError):
                     print("Invalid delay value. Please enter a valid number.\n")
-            elif answer == "6":
+            elif answer == "7":
                 print("Bye!")
                 break
             else:
-                print("Invalid choice. Please enter a number from 1 to 6.\n")
+                print("Invalid choice. Please enter a number from 1 to 7.\n")

@@ -5,6 +5,7 @@ from mazegen import MazeGenerator
 from parser import read_config_file, parse_config
 from solve import Solve_bfs
 
+
 def main(argv: list[str] | None = None) -> None:
     """Generate a maze from a configuration file."""
     args = sys.argv if argv is None else argv

@@ -3,7 +3,6 @@ PIP = pip3
 MAIN = a_maze_ing.py
 CONFIG = config.txt
 
-
 all: install
 
 install:

@@ -3,6 +3,24 @@ import sys
 
 
 class MazeGenerator:
+    """
+    Maze generator using recursive backtracking (depth-first search) algorithm.
+    Description:
+        This class generates a maze based on the specified width, height, entry and exit points,
+        and an optional random seed. It can generate both perfect mazes (without loops) and
+        imperfect mazes (with loops) based on the `perfect` parameter.
+        The maze is represented as a grid of cells, 
+        where each cell has walls in the four cardinal directions (NORTH
+        
+    Args:
+        width: Width of the maze (number of columns).
+        height: Height of the maze (number of rows).
+        entry: Tuple (x, y) for the maze entry point.
+        exit: Tuple (x, y) for the maze exit point.
+        seed: Optional random seed for reproducibility.
+        perfect: If True, generates a perfect maze (no loops). 
+                If False, adds extra passages to create loops.
+    """
     NORTH: int = 1
     EAST: int = 2
     SOUTH: int = 4

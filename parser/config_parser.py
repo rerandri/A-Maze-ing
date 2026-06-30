@@ -2,7 +2,7 @@ from typing import Mapping, TypedDict
 
 
 class MazeConfig(TypedDict):
-    """Typed normalized maze configuration."""
+    """Template for maze configuration settings."""
 
     WIDTH: int
     HEIGHT: int
@@ -14,7 +14,9 @@ class MazeConfig(TypedDict):
 
 
 def _require_int(config: Mapping[str, object], key: str) -> int:
-    """Return a required integer setting."""
+    """
+    Return a required integer setting from the configuration.
+    """
     if key not in config:
         raise ValueError(f"Missing required configuration key: {key}")
     value = config[key]
