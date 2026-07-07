@@ -56,6 +56,7 @@ class AsciiRenderer:
         self.PATH: str = self.PATH
         self.START: str = self.START
         self.END: str = self.END
+        self.count_invalid_inputs: int = 0
 
     def _build_pixels(self) -> list[list[str]]:
         """Build a 2D character matrix representing the maze.
@@ -245,44 +246,50 @@ class AsciiRenderer:
     def run_iterative(self) -> None:
         """Run the interactive terminal menu for maze actions."""
         while True:
-            print("\033[1m=== A-Maze-ing ===\033[0m")
+            print("\n\033[1m=== A-Maze-ing ===\033[0m")
             print("[1]. Re-generate a new maze")
             print("[2]. Display maze")
-            print(f"[3]. {'Hide' if self.show_path else 'Show'} path from entry to exit")
+            print(f"[3]. Show path from entry to exit {'[ON]' if self.show_path else '[OFF]'}")
             print(f"[4]. Toggle reveal animation {'[ON]' if self.animate_reveal else '[OFF]'}")
             print("[5]. Rotate maze colors")
             print("[6]. Cycle '42' pattern colors")
             print("[7]. Quit")
-            print("\033[33mType /help for more commands.\033[0m")
+            print("\n\033[33mType /help for more commands.\033[0m")
             try:
-                print("\033[05mMaze>> \033[0m", end="", flush=True)
+                print("\033[1;05mMaze>> \033[0m", end="", flush=True)
                 answer: str = input().strip(' ')
             except (KeyboardInterrupt, EOFError):
                 print("\nOperation cancelled.\n")
                 break
             if answer == "1":
+                os.system('clear')
                 self._clamp_maze_to_terminal()
                 self.maze.seed = random.randint(0, 2**32)
                 self.maze._generated = False
                 self.maze.generate()
                 self.display(show_path=self.show_path)
             elif answer == "2":
+                os.system('clear')
                 self.display(show_path=self.show_path)
             elif answer == "3":
+                os.system('clear')
                 self.show_path = not self.show_path
                 self.display(show_path=self.show_path, animate=False)
             elif answer == "4":
+                os.system('clear')
                 self.animate_reveal = not self.animate_reveal
                 print(
                     f"Reveal animation {'enabled' if self.animate_reveal else 'disabled'}.\n"
                 )
             elif answer == "5":
+                os.system('clear')
                 self._color_index = (self._color_index + 1) % len(
                     self.WALL_OPTIONS
                 )
                 self.EMPTY = self.WALL_OPTIONS[self._color_index]
                 self.display(show_path=self.show_path, animate=False)
             elif answer == "6":
+                os.system('clear')
                 self._blocked42_index = (
                     self._blocked42_index + 1
                 ) % len(self.BLOCKED42_OPTIONS)
@@ -313,24 +320,41 @@ class AsciiRenderer:
                 help()
             elif answer == "/info".strip() or answer == "/i".strip():
                 os.system('clear')
+                temp_delay = self.delay
+                if self.show_path:
+                    self.delay = 0.0
                 self.display(show_path=self.show_path, animate=False)
+                self.delay = temp_delay
                 self.header()
+
             elif answer == "7" or answer.lower() == "quit" or answer.lower() == "exit":
-                print("Bye!")
+                print(" ... Exiting Terminal Interface ...\n")
                 break
             else:
-                print("Invalid choice.\n")
+                def clear_terminal() -> None:
+                    """Clear the terminal screen."""
+                    os.system('clear')
+
+                if self.count_invalid_inputs >= 4:
+                    clear_terminal()
+                    self.count_invalid_inputs = 0
+                self.count_invalid_inputs += 1
+                print("\033[1;31mInvalid choice.\033[0m\n")
 
     def header(self):
         enter = self.START
         exit = self.END
         path = self.PATH
         print(
-            "Info for maze:\n"
+            "\033[1mInfo for maze:\033[0m\n"
             f"  Maze dimensions : {self.maze.width} x {self.maze.height:<10}\n"
             f"  Enter           : {enter:<15}\n"
             f"  Exit            : {exit:<15}\n"
+            f"  Wall            : {self.EMPTY:<15}\n"
+            f"  42              : {self.BLOCKED:<15}\n"
+            f"  Seed            : {self.maze.seed:<15}\n"
             f"  Path            : {path:<15}\n"
+            f"  Show path       : {'ON' if self.show_path else 'OFF':<15}\n"
             f"  animation reveal: {'ON' if self.animate_reveal else 'OFF':<15}\n"
             f"  Animation delay : {self.delay:<15}\n")
 
