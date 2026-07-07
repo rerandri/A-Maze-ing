@@ -39,7 +39,9 @@ def main(argv: list[str] | None = None) -> None:
         try:
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write("\n".join(output_lines) + "\n")
-            print(f"Maze generated and saved to '{output_file}'")
+            print(
+                f"\033[32mMaze generated and saved to '{output_file}'\033[0m"
+            )
             renderer = AsciiRenderer(maze)
             try:
                 renderer.run_iterative()

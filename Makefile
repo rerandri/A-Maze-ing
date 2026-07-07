@@ -9,7 +9,7 @@ install:
 	$(PIP) install --break-system-packages flake8 mypy build
 
 run:
-	ft_lock
+	$(PYTHON) $(MAIN) $(CONFIG)
 
 lint:
 	flake8 .

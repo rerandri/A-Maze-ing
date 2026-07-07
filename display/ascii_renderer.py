@@ -1,6 +1,7 @@
 import random
 import shutil
 import sys
+import os
 import time
 
 from mazegen import MazeGenerator
@@ -41,7 +42,7 @@ class AsciiRenderer:
             maze: A fully generated MazeGenerator instance.
         """
         self.maze: MazeGenerator = maze
-        self.delay: float = 0.0
+        self.delay: float = 0.03
         self._clamp_maze_to_terminal()
         self.solve = Solve_bfs(maze)
         self._color_index: int = 0
@@ -243,31 +244,19 @@ class AsciiRenderer:
 
     def run_iterative(self) -> None:
         """Run the interactive terminal menu for maze actions."""
-        def header():
-            enter = "👽"
-            exit = "🛸"
-            path = "🛜"
-            print(
-                "Info for maze:\n"
-                f"  Enter           : {enter:<15}\n"
-                f"  Exit            : {exit:<15}\n"
-                f"  Path            : {path:<15}\n"    
-                f"  Animation delay : {self.delay:<15}")
-            print(
-                "For delay, type 'delay=<seconds>' "
-                "(e.g., delay=0.5) and press Enter.\n")
-        header()
         while True:
-            print("=== A-Maze-ing ===")
+            print("\033[1m=== A-Maze-ing ===\033[0m")
             print("[1]. Re-generate a new maze")
             print("[2]. Display maze")
             print(f"[3]. {'Hide' if self.show_path else 'Show'} path from entry to exit")
-            print(f"[4]. Toggle reveal animation  {'[ON]' if self.animate_reveal else '[OFF]'}")
+            print(f"[4]. Toggle reveal animation {'[ON]' if self.animate_reveal else '[OFF]'}")
             print("[5]. Rotate maze colors")
             print("[6]. Cycle '42' pattern colors")
-            print("[7]. Quit\nChoice? : ", end="", flush=True)
+            print("[7]. Quit")
+            print("\033[33mType /help for more commands.\033[0m")
             try:
-                answer: str = input()
+                print("\033[05mMaze>> \033[0m", end="", flush=True)
+                answer: str = input().strip(' ')
             except (KeyboardInterrupt, EOFError):
                 print("\nOperation cancelled.\n")
                 break
@@ -300,12 +289,14 @@ class AsciiRenderer:
 
                 self.BLOCKED = self.BLOCKED42_OPTIONS[self._blocked42_index]
                 self.display(show_path=self.show_path, animate=False)
-            elif answer.startswith("delay="):
+            elif answer.startswith("/delay ") or answer.startswith("/d "):
+                answer = answer.removeprefix("/delay ").removeprefix("/d ").strip()
+                print(f"Setting animation delay... {answer}")
                 try:
-                    tmp_delay = float(answer.split("=")[1])
-                    if tmp_delay < 0:
+                    tmp_delay = float(answer)
+                    if tmp_delay < 0.0:
                         raise ValueError("Delay cannot be negative.")
-                    elif tmp_delay > 1:
+                    elif tmp_delay > 0.1:
                         raise ValueError(
                             "Warning: Delay is quite long. Consider using a smaller "
                             "value for better experience."
@@ -313,11 +304,54 @@ class AsciiRenderer:
                     else:
                         self.delay = tmp_delay
                         print(f"Animation delay set to {self.delay} seconds.\n")
-                        header()
                 except (ValueError, IndexError):
                     print("Invalid delay value. Please enter a valid number.\n")
-            elif answer == "7":
+            elif answer == "/clear".strip() or answer == "/c".strip():
+                os.system('clear')
+            elif answer == "/help".strip() or answer == "/h".strip():
+                os.system('clear')
+                help()
+            elif answer == "/info".strip() or answer == "/i".strip():
+                os.system('clear')
+                self.display(show_path=self.show_path, animate=False)
+                self.header()
+            elif answer == "7" or answer.lower() == "quit" or answer.lower() == "exit":
                 print("Bye!")
                 break
             else:
-                print("Invalid choice. Please enter a number from 1 to 7.\n")
+                print("Invalid choice.\n")
+
+    def header(self):
+        enter = self.START
+        exit = self.END
+        path = self.PATH
+        print(
+            "Info for maze:\n"
+            f"  Maze dimensions : {self.maze.width} x {self.maze.height:<10}\n"
+            f"  Enter           : {enter:<15}\n"
+            f"  Exit            : {exit:<15}\n"
+            f"  Path            : {path:<15}\n"
+            f"  animation reveal: {'ON' if self.animate_reveal else 'OFF':<15}\n"
+            f"  Animation delay : {self.delay:<15}\n")
+
+
+def help() -> None:
+    os.system('clear')
+    """Print usage instructions for the ascii renderer."""
+    print(
+        "\033[1m=== A-Maze-ing Help ===\033[0m\n"
+        "This program generates and displays mazes in the terminal.\n\n"
+        "\033[1m**  Menu Options:\033[0m\n"
+        f"1. {'Re-generate a new maze':<35} : Creates a new maze with a random seed.\n"
+        f"2. {'Display maze':<35} : Shows the current maze in the terminal.\n"
+        f"3. {'Show/Hide path from entry to exit':<35} : Toggles the display of the solution path.\n"
+        f"4. {'Toggle reveal animation':<35} : Enables or disables the animation when revealing the maze.\n"
+        f"5. {'Rotate maze colors':<35} : Changes the color scheme of the maze walls.\n"
+        f"6. {'Cycle 42 pattern colors':<35} : Changes the color scheme of blocked cells.\n"
+        f"7. {'Quit':<35} : Exits the program.\n\n"
+        "\033[1m**  Additional Commands:\033[0m\n"
+        f"8. {'/clear or /c':<35} : Clears the terminal screen.\n"
+        f"9. {'/help or /h':<35} : Displays this help message.\n"
+        f"10. {'/delay <seconds> or /d <seconds>':<34} : Updates the animation speed.\n"
+        f"11. {'/info or /i':<34} : Displays information about the maze, including entry, exit, and path symbols.\n\n"
+    )

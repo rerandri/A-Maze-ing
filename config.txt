@@ -1,7 +1,19 @@
-WIDTH=30
-HEIGHT=30
+# ---- SIZE ----
+WIDTH=20
+HEIGHT=20
+
+# ---- START ----
 ENTRY=1,1
 EXIT=10,15
-SEED=42
+
+# ---- OUTPUT FILE ----
 OUTPUT_FILE=maze.txt
-PERFECT=false
+
+# ---- OPTIONAL ----
+PERFECT=true
+SEED=42
+
+# ---- Extra ----
+ANIMATION=ON
+DELAY=0.4
+RAINBOW_MAZE=false
