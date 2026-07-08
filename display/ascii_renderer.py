@@ -11,28 +11,28 @@ from solve import Solve_bfs
 class AsciiRenderer:
     """Render a maze using terminal-friendly characters."""
 
-    BLOCK_CHAR: str = "➖"
-    BLOCK_WALL: str = "🟥"
+    BLOCK_CHAR: str = "  "
+    BLOCK_WALL: str = "██"
     WALL_OPTIONS = [
-        "🟩",
-        "🟦",
-        "🟨",
-        "🟧"
+        "\033[37m██\033[0m",
+        "\033[34m██\033[0m",
+        "\033[33m██\033[0m",
+        "\033[31m██\033[0m"
     ]
 
     BLOCKED42_OPTIONS = [
-        "⬜",
-        "⬛",
-        "🟪",
-        "🟫",
+        "\033[36m██\033[0m",
+        "\033[30m██\033[0m",
+        "\033[35m██\033[0m",
+        "\033[32m██\033[0m",
     ]
 
     EMPTY: str = WALL_OPTIONS[0]
     BACKGROUND: str = BLOCK_CHAR
     BLOCKED: str = BLOCKED42_OPTIONS[0]
-    PATH: str = "🛜 "
-    START: str = "👽"
-    END: str = "🛸"
+    PATH: str = "\033[36m██\033[0m"
+    START: str = "\033[34m██\033[0m"
+    END: str = "\033[32m██\033[0m"
 
     ANIM_DURATION: float = 1.5
 
