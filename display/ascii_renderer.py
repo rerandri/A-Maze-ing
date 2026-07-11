@@ -13,32 +13,6 @@ class AsciiRenderer:
     """Render a maze using terminal-friendly characters."""
 
     C = Color
-    BLOCK_CHAR: str = "  "
-    BLOCK_WALL: str = "██"
-
-    WALL_OPTIONS = [
-        C.rgb(255, 255, 255) + "██" + C.end(),
-        C.rgb(255, 0, 0) + "██" + C.end(),
-        C.rgb(0, 255, 0) + "██" + C.end(),
-        C.rgb(0, 0, 255) + "██" + C.end(),
-        C.rgb(255, 255, 0) + "██" + C.end(),
-        C.rgb(255, 0, 255) + "██" + C.end()
-    ]
-
-    BLOCKED42_OPTIONS = [
-        C.rgb(255, 0, 255) + "██" + C.end(),
-        C.rgb(0, 0, 0) + "██" + C.end(),
-        C.rgb(255, 0, 255) + "██" + C.end(),
-        C.rgb(0, 255, 0) + "██" + C.end(),
-    ]
-
-    EMPTY: str = WALL_OPTIONS[0]
-    BACKGROUND: str = BLOCK_CHAR
-    BLOCKED: str = BLOCKED42_OPTIONS[0]
-    PATH: str = "\033[38m██\033[0m"
-    START: str = "\033[34m██\033[0m"
-    END: str = "\033[32m██\033[0m"
-
     ANIM_DURATION: float = 1.5
 
     def __init__(self, maze: MazeGenerator) -> None:
@@ -46,22 +20,28 @@ class AsciiRenderer:
         Args:
             maze: A fully generated MazeGenerator instance.
         """
+
         self.maze: MazeGenerator = maze
         self.delay: float = 0.03
-        self._clamp_maze_to_terminal()
         self.solve = Solve_bfs(maze)
+
         self._color_index: int = 0
         self._blocked42_index: int = 0
+        self._last_render_lines: int = 0
+        self.count_invalid_inputs: int = 0
+
+        self.c: Color = Color()
+
+        self.way: str = self.c.rgb(100,100,100) + "██" + self.c.end()
+        self.wall: str = self.c.rgb(255,255,255) + "██" + self.c.end()
+        self.blocked: str = self.c.rgb(250,250,250) + "██" + self.c.end()
+        self.path: str = self.c.rgb(0,255,0) + "██" + self.c.end()
+        self.start: str = self.c.rgb(0,0,255) + "██" + self.c.end()
+        self.end: str = self.c.rgb(255,0,0) + "██" + self.c.end()
+
         self.show_path: bool = False
         self.animate_reveal: bool = True
-        self._last_render_lines: int = 0
-        self.EMPTY: str = self.WALL_OPTIONS[0]
-        self.BACKGROUND: str = self.BLOCK_CHAR
-        self.BLOCKED: str = self.BLOCKED42_OPTIONS[0]
-        self.PATH: str = self.PATH
-        self.START: str = self.START
-        self.END: str = self.END
-        self.count_invalid_inputs: int = 0
+        self._clamp_maze_to_terminal()
 
     def _build_pixels(self) -> list[list[str]]:
         """Build a 2D character matrix representing the maze.
@@ -73,25 +53,25 @@ class AsciiRenderer:
         cols: int = self.maze.width * 2 + 1
         rows: int = self.maze.height * 2 + 1
         pixels: list[list[str]] = [
-            [self.EMPTY for _ in range(cols)] for _ in range(rows)
+            [self.wall for _ in range(cols)] for _ in range(rows)
         ]
 
         for y in range(self.maze.height):
             for x in range(self.maze.width):
 
                 if (x, y) in self.maze._blocked:
-                    pixels[2 * y + 1][2 * x + 1] = self.BLOCKED
+                    pixels[2 * y + 1][2 * x + 1] = self.blocked
                 else:
-                    pixels[2 * y + 1][2 * x + 1] = self.BACKGROUND
+                    pixels[2 * y + 1][2 * x + 1] = self.way
 
                 if not self.maze.has_wall(x, y, MazeGenerator.NORTH):
-                    pixels[2 * y][2 * x + 1] = self.BACKGROUND
+                    pixels[2 * y][2 * x + 1] = self.way
                 if not self.maze.has_wall(x, y, MazeGenerator.SOUTH):
-                    pixels[2 * y + 2][2 * x + 1] = self.BACKGROUND
+                    pixels[2 * y + 2][2 * x + 1] = self.way
                 if not self.maze.has_wall(x, y, MazeGenerator.EAST):
-                    pixels[2 * y + 1][2 * x + 2] = self.BACKGROUND
+                    pixels[2 * y + 1][2 * x + 2] = self.way
                 if not self.maze.has_wall(x, y, MazeGenerator.WEST):
-                    pixels[2 * y + 1][2 * x] = self.BACKGROUND
+                    pixels[2 * y + 1][2 * x] = self.way
 
         return pixels
 
@@ -175,7 +155,7 @@ class AsciiRenderer:
         step_delay = self.ANIM_DURATION / steps
 
         canvas = [
-            [self.EMPTY for _ in range(len(pixels[0]))] for _ in range(total_rows)
+            [self.wall for _ in range(len(pixels[0]))] for _ in range(total_rows)
         ]
 
         for i in range(0, total_rows, chunk):
@@ -214,8 +194,8 @@ class AsciiRenderer:
         entry_x, entry_y = self.maze.entry
         exit_x, exit_y = self.maze.exit
         pixels: list[list[str]] = self._build_pixels()
-        pixels[2 * entry_y + 1][2 * entry_x + 1] = self.START
-        pixels[2 * exit_y + 1][2 * exit_x + 1] = self.END
+        pixels[2 * entry_y + 1][2 * entry_x + 1] = self.start
+        pixels[2 * exit_y + 1][2 * exit_x + 1] = self.end
 
         self._last_render_lines = 0
 
@@ -230,26 +210,29 @@ class AsciiRenderer:
         curr_x, curr_y = self.maze.entry
         for move in self.solve.get_solution():
             if move == "N":
-                pixels[2 * curr_y][2 * curr_x + 1] = self.PATH
+                pixels[2 * curr_y][2 * curr_x + 1] = self.path
                 curr_y -= 1
             elif move == "S":
-                pixels[2 * curr_y + 2][2 * curr_x + 1] = self.PATH
+                pixels[2 * curr_y + 2][2 * curr_x + 1] = self.path
                 curr_y += 1
             elif move == "E":
-                pixels[2 * curr_y + 1][2 * curr_x + 2] = self.PATH
+                pixels[2 * curr_y + 1][2 * curr_x + 2] = self.path
                 curr_x += 1
             elif move == "W":
-                pixels[2 * curr_y + 1][2 * curr_x] = self.PATH
+                pixels[2 * curr_y + 1][2 * curr_x] = self.path
                 curr_x -= 1
-            pixels[2 * curr_y + 1][2 * curr_x + 1] = self.PATH
+            pixels[2 * curr_y + 1][2 * curr_x + 1] = self.path
             self._flush_render(pixels)
             time.sleep(self.delay)
 
-        pixels[2 * exit_y + 1][2 * exit_x + 1] = self.END
+        pixels[2 * exit_y + 1][2 * exit_x + 1] = self.end
         self._flush_render(pixels)
 
     def run_iterative(self) -> None:
         """Run the interactive terminal menu for maze actions."""
+        self.wall = self.c.random_color() + "██" + self.c.end()
+        self.blocked = self.c.random_color() + "██" + self.c.end()
+
         while True:
             print("\n\033[1m=== A-Maze-ing ===\033[0m")
             print("[1]. Re-generate a new maze")
@@ -289,19 +272,13 @@ class AsciiRenderer:
             elif answer == "5":
                 os.system('clear')
                 self.show_path = False
-                self._color_index = (self._color_index + 1) % len(
-                    self.WALL_OPTIONS
-                )
-                self.EMPTY = self.WALL_OPTIONS[self._color_index]
+             
+                self.wall = self.c.random_color() + "██" + self.c.end()
                 self.display(show_path=self.show_path, animate=False)
             elif answer == "6":
                 os.system('clear')
                 self.show_path = False
-                self._blocked42_index = (
-                    self._blocked42_index + 1
-                ) % len(self.BLOCKED42_OPTIONS)
-
-                self.BLOCKED = self.BLOCKED42_OPTIONS[self._blocked42_index]
+                self.blocked = self.c.random_color() + "██" + self.c.end()
                 self.display(show_path=self.show_path, animate=False)
             elif answer.startswith("/delay ") or answer.startswith("/d "):
                 answer = answer.removeprefix("/delay ").removeprefix("/d ").strip()
@@ -337,6 +314,19 @@ class AsciiRenderer:
             elif answer == "7" or answer.lower() == "quit" or answer.lower() == "exit":
                 print(" ... Exiting Terminal Interface ...\n")
                 break
+            elif answer == "/setcolors".strip() or answer == "/sc".strip():
+                os.system('clear')
+                print("Setting custom colors for maze elements.")
+                try:
+                    print ("Enter colors in RGB format (e.g: 255, 0, 0).")
+                    wall_color = input("Enter wall color (RGB format): ")
+                    self.wall = self.c.rgb(*map(int, wall_color.split(','))) + "██" + self.c.end()
+                    print(f"Wall color set successfully -- {self.wall}.\n")
+                    blocked_color = input("Enter '42' pattern color (RGB format): ")
+                    self.blocked = self.c.rgb(*map(int, blocked_color.split(','))) + "██" + self.c.end()
+                    print(f"Blocked color set successfully -- {self.blocked}.\n")
+                except Exception as e:
+                    print(f"Error setting colors: {e}\n")
             else:
                 def clear_terminal() -> None:
                     """Clear the terminal screen."""
@@ -349,16 +339,16 @@ class AsciiRenderer:
                 print("\033[1;31mInvalid choice.\033[0m\n")
 
     def header(self):
-        enter = self.START
-        exit = self.END
-        path = self.PATH
+        enter = self.start
+        exit = self.end
+        path = self.path
         print(
             "\033[1mInfo for maze:\033[0m\n"
             f"  Maze dimensions : {self.maze.width} x {self.maze.height:<10}\n"
             f"  Enter           : {enter:<15}\n"
             f"  Exit            : {exit:<15}\n"
-            f"  Wall            : {self.EMPTY:<15}\n"
-            f"  42              : {self.BLOCKED:<15}\n"
+            f"  Wall            : {self.wall:<15}\n"
+            f"  42              : {self.blocked:<15}\n"
             f"  Seed            : {self.maze.seed:<15}\n"
             f"  Path            : {path:<15}\n"
             f"  Show path       : {'ON' if self.show_path else 'OFF':<15}\n"
