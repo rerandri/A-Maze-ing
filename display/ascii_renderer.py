@@ -4,6 +4,7 @@ import sys
 import os
 import time
 
+from .color import Color
 from mazegen import MazeGenerator
 from solve import Solve_bfs
 
@@ -11,26 +12,30 @@ from solve import Solve_bfs
 class AsciiRenderer:
     """Render a maze using terminal-friendly characters."""
 
+    C = Color
     BLOCK_CHAR: str = "  "
     BLOCK_WALL: str = "██"
+
     WALL_OPTIONS = [
-        "\033[37m██\033[0m",
-        "\033[34m██\033[0m",
-        "\033[33m██\033[0m",
-        "\033[31m██\033[0m"
+        C.rgb(255, 255, 255) + "██" + C.end(),
+        C.rgb(255, 0, 0) + "██" + C.end(),
+        C.rgb(0, 255, 0) + "██" + C.end(),
+        C.rgb(0, 0, 255) + "██" + C.end(),
+        C.rgb(255, 255, 0) + "██" + C.end(),
+        C.rgb(255, 0, 255) + "██" + C.end()
     ]
 
     BLOCKED42_OPTIONS = [
-        "\033[36m██\033[0m",
-        "\033[30m██\033[0m",
-        "\033[35m██\033[0m",
-        "\033[32m██\033[0m",
+        C.rgb(255, 0, 255) + "██" + C.end(),
+        C.rgb(0, 0, 0) + "██" + C.end(),
+        C.rgb(255, 0, 255) + "██" + C.end(),
+        C.rgb(0, 255, 0) + "██" + C.end(),
     ]
 
     EMPTY: str = WALL_OPTIONS[0]
     BACKGROUND: str = BLOCK_CHAR
     BLOCKED: str = BLOCKED42_OPTIONS[0]
-    PATH: str = "\033[36m██\033[0m"
+    PATH: str = "\033[38m██\033[0m"
     START: str = "\033[34m██\033[0m"
     END: str = "\033[32m██\033[0m"
 
@@ -283,6 +288,7 @@ class AsciiRenderer:
                 )
             elif answer == "5":
                 os.system('clear')
+                self.show_path = False
                 self._color_index = (self._color_index + 1) % len(
                     self.WALL_OPTIONS
                 )
@@ -290,6 +296,7 @@ class AsciiRenderer:
                 self.display(show_path=self.show_path, animate=False)
             elif answer == "6":
                 os.system('clear')
+                self.show_path = False
                 self._blocked42_index = (
                     self._blocked42_index + 1
                 ) % len(self.BLOCKED42_OPTIONS)

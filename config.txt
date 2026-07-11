@@ -1,6 +1,6 @@
 # ---- SIZE ----
-WIDTH=25
-HEIGHT=25
+WIDTH=20
+HEIGHT=20
 
 # ---- START ----
 ENTRY=1,1
@@ -10,7 +10,7 @@ EXIT=10,18
 OUTPUT_FILE=maze.txt
 
 # ---- OPTIONAL ----
-PERFECT=true
+PERFECT=false
 SEED=42
 
 # ---- Extra ----

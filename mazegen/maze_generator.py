@@ -56,6 +56,7 @@ class MazeGenerator:
         exit: tuple[int, int],
         seed: int | None = None,
         perfect: bool = True,
+        show_pattern: bool = True
     ) -> None:
         self.width: int = width
         self.height: int = height
@@ -67,7 +68,7 @@ class MazeGenerator:
         self.grid: list[list[int]] = []
         self._solution: list[str] = []
         self._generated: bool = False
-
+        self._show_pattern: bool = show_pattern
     def _init_grid(self) -> None:
         """Initialize the grid with all walls closed."""
         closed: int = self.NORTH | self.SOUTH | self.EAST | self.WEST
