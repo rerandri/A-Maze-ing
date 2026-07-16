@@ -244,7 +244,7 @@ class AsciiRenderer:
             print("[7]. Quit")
             print("\n\033[33mType /help for more commands.\033[0m")
             try:
-                print("\033[1;05mMaze>> \033[0m", end="", flush=True)
+                print("\033[1mMaze>> \033[0m", end="", flush=True)
                 answer: str = input().strip(' ')
             except (KeyboardInterrupt, EOFError):
                 print("\nOperation cancelled.\n")
@@ -259,10 +259,12 @@ class AsciiRenderer:
             elif answer == "2":
                 os.system('clear')
                 self.display(show_path=self.show_path)
+                self.header()
             elif answer == "3":
                 os.system('clear')
                 self.show_path = not self.show_path
                 self.display(show_path=self.show_path, animate=False)
+                self.header()
             elif answer == "4":
                 os.system('clear')
                 self.animate_reveal = not self.animate_reveal
@@ -271,14 +273,20 @@ class AsciiRenderer:
                 )
             elif answer == "5":
                 os.system('clear')
+                combinaison = self.c.get_comb()
+                idx = random.randint(0, len(combinaison) - 1)
                 self.show_path = False
-             
-                self.wall = self.c.random_color() + "██" + self.c.end()
+
+                self.wall = combinaison[idx][0] + "██" + self.c.end()
+                self.way = combinaison[idx][1] + "██" + self.c.end()
                 self.display(show_path=self.show_path, animate=False)
             elif answer == "6":
                 os.system('clear')
+                combinaison = self.c.get_comb()
+                idx = random.randint(0, len(combinaison) - 1)
+
                 self.show_path = False
-                self.blocked = self.c.random_color() + "██" + self.c.end()
+                self.blocked = combinaison[idx][0] + "██" + self.c.end()
                 self.display(show_path=self.show_path, animate=False)
             elif answer.startswith("/delay ") or answer.startswith("/d "):
                 answer = answer.removeprefix("/delay ").removeprefix("/d ").strip()
@@ -344,17 +352,11 @@ class AsciiRenderer:
         path = self.path
         print(
             "\033[1mInfo for maze:\033[0m\n"
-            f"  Maze dimensions : {self.maze.width} x {self.maze.height:<10}\n"
-            f"  Enter           : {enter:<15}\n"
-            f"  Exit            : {exit:<15}\n"
-            f"  Wall            : {self.wall:<15}\n"
-            f"  42              : {self.blocked:<15}\n"
-            f"  Seed            : {self.maze.seed:<15}\n"
-            f"  Path            : {path:<15}\n"
-            f"  Show path       : {'ON' if self.show_path else 'OFF':<15}\n"
-            f"  animation reveal: {'ON' if self.animate_reveal else 'OFF':<15}\n"
-            f"  Animation delay : {self.delay:<15}\n")
-
+            f"Entry : {enter} | Exit : {exit} | Path : {path} | wall : {self.wall} "
+            f"| '42' pattern : {self.blocked}\n\n"
+            f"Animation delay : {self.delay} seconds\nReveal animation : {'ON' if self.animate_reveal else 'OFF'}\n"
+            f"Show path : {'ON' if self.show_path else 'OFF'}\n"
+)
 
 def help() -> None:
     os.system('clear')

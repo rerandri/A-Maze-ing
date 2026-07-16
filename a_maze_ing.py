@@ -48,17 +48,17 @@ def main(argv: list[str] | None = None) -> None:
             except (KeyboardInterrupt, EOFError):
                 print("\nOperation cancelled on Renderer.\n")
         except OSError as err:
-            print(f"Error writing to file: {err}", file=sys.stderr)
+            print(f"\033[31;1mError writing to file: {err}\033[0m", file=sys.stderr)
             sys.exit(1)
     except FileNotFoundError:
         print(
-            f"Error: Configuration file not found at '{config_file}'",
+            f"\033[31;1mError: Configuration file not found at '{config_file}'\033[0m",
             file=sys.stderr,
         )
         sys.exit(1)
     except (ValueError, TypeError) as err:
         print(
-            f"Error processing configuration or generating maze: {err}",
+            f"\033[31;1mERROR PROCESSING CONFIGURATION: {err}\033[0m",
             file=sys.stderr,
         )
         sys.exit(1)

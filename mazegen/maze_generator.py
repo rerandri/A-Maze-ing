@@ -9,16 +9,16 @@ class MazeGenerator:
         This class generates a maze based on the specified width, height, entry and exit points,
         and an optional random seed. It can generate both perfect mazes (without loops) and
         imperfect mazes (with loops) based on the `perfect` parameter.
-        The maze is represented as a grid of cells, 
+        The maze is represented as a grid of cells,
         where each cell has walls in the four cardinal directions (NORTH
-        
+
     Args:
         width: Width of the maze (number of columns).
         height: Height of the maze (number of rows).
         entry: Tuple (x, y) for the maze entry point.
         exit: Tuple (x, y) for the maze exit point.
         seed: Optional random seed for reproducibility.
-        perfect: If True, generates a perfect maze (no loops). 
+        perfect: If True, generates a perfect maze (no loops).
                 If False, adds extra passages to create loops.
     """
     NORTH: int = 1
@@ -128,7 +128,12 @@ class MazeGenerator:
         """Generate maze structure and compute the shortest solution path."""
         self._init_grid()
         random.seed(self.seed)
-        self._carve_pattern42()
+        if self._show_pattern:
+            self._carve_pattern42()
+        if self.entry in self._blocked:
+            raise ValueError(f"Entry point {self.entry} is blocked by pattern.")
+        if self.exit in self._blocked:
+            raise ValueError(f"Exit point {self.exit} is blocked by pattern.")
         self._generate_dfs()
         if not self.perfect:
             self._add_extra_passages()
