@@ -176,7 +176,7 @@ class AsciiRenderer:
             f" [5].Rotate maze colors\n"
             f" [6].Cycle '42' pattern colors")
         print(" [7].Quit")
-    
+
         print(self.c.info("\nType /help for more commands."))
         try:
             print("\033[1mMaze>> \033[0m", end="", flush=True)
