@@ -1,10 +1,10 @@
 # ---- SIZE ----
-WIDTH=20
-HEIGHT=20
+WIDTH=30
+HEIGHT=30
 
 # ---- START ----
-ENTRY=1,10
-EXIT=5,1
+ENTRY=29,1
+EXIT=1,29
 
 # ---- OUTPUT FILE ----
 OUTPUT_FILE=maze.txt

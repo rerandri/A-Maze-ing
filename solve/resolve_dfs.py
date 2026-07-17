@@ -20,7 +20,6 @@ class Solve_bfs:
         self._solution: list[str] = []
 
     def _solve_bfs(self) -> list[str]:
-        """Find the shortest path from entry to exit using BFS."""
         queue: deque[tuple[int, int]] = deque([self.maze.entry])
         parent: dict[tuple[int, int], tuple[tuple[int, int], int]] = {
             self.maze.entry: ((-1, -1), 0)

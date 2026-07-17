@@ -1,5 +1,6 @@
 import random
 
+
 class Color():
     def rgb(self, r: int, g: int, b: int) -> str:
         return f"\033[38;2;{r};{g};{b}m"
@@ -7,6 +8,22 @@ class Color():
     @staticmethod
     def end() -> str:
         return "\033[0m"
+
+    @staticmethod
+    def error(msg: str) -> str:
+        return f"\033[31;1mError: {msg}\033[0m"
+
+    @staticmethod
+    def warning(msg: str) -> str:
+        return f"\033[33;1mWarning: {msg}\033[0m"
+
+    @staticmethod
+    def info(msg: str) -> str:
+        return f"\033[36;1m{msg}\033[0m"
+
+    @staticmethod
+    def success(msg: str) -> str:
+        return f"\033[32;1m{msg}\033[0m"
 
     @staticmethod
     def random_color() -> str:
@@ -28,7 +45,6 @@ class Color():
             green = random.randint(170, 255)
             blue = random.randint(170, 255)
         return f"\033[38;2;{red};{green};{blue}m"
-
 
     def get_comb(self) -> list[tuple[str, str]]:
         return [

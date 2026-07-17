@@ -1,16 +1,21 @@
 import sys
-
+import os
 from display import AsciiRenderer
+from display.color import Color
 from mazegen import MazeGenerator
 from parser import read_config_file, parse_config
 from solve import Solve_bfs
 
 
 def main(argv: list[str] | None = None) -> None:
+    os.system('clear')
     """Generate a maze from a configuration file."""
     args = sys.argv if argv is None else argv
     if len(args) != 2:
-        print("Usage: python a_maze_ing.py <config_file>", file=sys.stderr)
+        print(
+            Color.info("Usage: python a_maze_ing.py <config_file>"),
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     config_file = args[1]
@@ -39,26 +44,36 @@ def main(argv: list[str] | None = None) -> None:
         try:
             with open(output_file, "w", encoding="utf-8") as f:
                 f.write("\n".join(output_lines) + "\n")
-            print(
-                f"\033[32mMaze generated and saved to '{output_file}'\033[0m"
-            )
+            print(Color.info(
+                f"Generating maze with dimensions"
+                f" {maze.width}x{maze.height} ..."
+            ))
+            print(Color.success(
+                f"Maze generated and saved to '{output_file}'"
+            ))
             renderer = AsciiRenderer(maze)
             try:
                 renderer.run_iterative()
             except (KeyboardInterrupt, EOFError):
-                print("\nOperation cancelled on Renderer.\n")
+                print(Color.warning("\nOperation cancelled on Renderer.\n"))
         except OSError as err:
-            print(f"\033[31;1mError writing to file: {err}\033[0m", file=sys.stderr)
+            print(
+                Color.error(
+                    f"Could not write to output file"
+                    f" '{output_file}': {err}"
+                ),
+                file=sys.stderr,
+            )
             sys.exit(1)
     except FileNotFoundError:
         print(
-            f"\033[31;1mError: Configuration file not found at '{config_file}'\033[0m",
+            Color.error(f"Configuration file not found at '{config_file}'"),
             file=sys.stderr,
         )
         sys.exit(1)
     except (ValueError, TypeError) as err:
         print(
-            f"\033[31;1mERROR PROCESSING CONFIGURATION: {err}\033[0m",
+            Color.error(f"Invalid configuration: {err}"),
             file=sys.stderr,
         )
         sys.exit(1)

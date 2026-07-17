@@ -2,8 +2,6 @@ from typing import Mapping, TypedDict
 
 
 class MazeConfig(TypedDict):
-    """Template for maze configuration settings."""
-
     WIDTH: int
     HEIGHT: int
     ENTRY: tuple[int, int]
@@ -14,14 +12,14 @@ class MazeConfig(TypedDict):
 
 
 def _require_int(config: Mapping[str, object], key: str) -> int:
-    """
-    Return a required integer setting from the configuration.
-    """
     if key not in config:
-        raise ValueError(f"Missing required configuration key: {key}")
+        raise ValueError(f"Missing required configuration key: '{key}'")
     value = config[key]
     if not isinstance(value, int):
-        raise TypeError(f"{key} must be an integer.")
+        raise TypeError(
+            f"'{key}' must be an integer,"
+            f" got {type(value).__name__}."
+        )
     return value
 
 
@@ -30,7 +28,6 @@ def _optional_point(
     key: str,
     default: tuple[int, int],
 ) -> tuple[int, int]:
-    """Return an optional point setting with a fallback."""
     value = config.get(key, default)
     if (
         isinstance(value, tuple)
@@ -39,32 +36,41 @@ def _optional_point(
         and isinstance(value[1], int)
     ):
         return value
-    raise TypeError(f"{key} must be a tuple of two integers.")
+    raise TypeError(
+        f"'{key}' must be a tuple of two integers,"
+        f" got {value!r}."
+    )
 
 
 def _optional_seed(config: Mapping[str, object]) -> int | None:
-    """Return an optional seed value."""
     value = config.get("SEED")
     if value is None or isinstance(value, int):
         return value
-    raise TypeError("SEED must be an integer or None.")
+    raise TypeError(
+        f"SEED must be an integer or None,"
+        f" got {type(value).__name__}."
+    )
 
 
 def _optional_output_file(config: Mapping[str, object]) -> str:
-    """Return an optional output file name."""
     value = config.get("OUTPUT_FILE", "output_maze.txt")
     if isinstance(value, str):
         return value
-    raise TypeError("OUTPUT_FILE must be a string.")
+    raise TypeError(
+        f"OUTPUT_FILE must be a string,"
+        f" got {type(value).__name__}."
+    )
 
 
 def parse_config(config: Mapping[str, object]) -> MazeConfig:
-    """Validate and normalize a maze configuration."""
     width = _require_int(config, "WIDTH")
     height = _require_int(config, "HEIGHT")
 
     if width < 10 or height < 10:
-        raise ValueError("The maze must be at least 10x10 in size.")
+        raise ValueError(
+            f"Maze too small: got {width}x{height},"
+            f" minimum is 10x10."
+        )
 
     entry = _optional_point(config, "ENTRY", (-1, -1))
     exit_pos = _optional_point(config, "EXIT", (-1, -1))
@@ -74,8 +80,8 @@ def parse_config(config: Mapping[str, object]) -> MazeConfig:
     else:
         if not (0 <= entry[0] < width and 0 <= entry[1] < height):
             raise ValueError(
-                f"Entry point {entry} is out of bounds for a "
-                f"{width}x{height} maze."
+                f"Entry point {entry} is out of bounds"
+                f" for a {width}x{height} maze."
             )
         normalized_entry = entry
 
@@ -84,8 +90,8 @@ def parse_config(config: Mapping[str, object]) -> MazeConfig:
     else:
         if not (0 <= exit_pos[0] < width and 0 <= exit_pos[1] < height):
             raise ValueError(
-                f"Exit point {exit_pos} is out of bounds for a "
-                f"{width}x{height} maze."
+                f"Exit point {exit_pos} is out of bounds"
+                f" for a {width}x{height} maze."
             )
         normalized_exit = exit_pos
 
@@ -93,12 +99,15 @@ def parse_config(config: Mapping[str, object]) -> MazeConfig:
     output_file = _optional_output_file(config)
     perfect = config.get("PERFECT", True)
     if not isinstance(perfect, bool):
-        raise TypeError("PERFECT must be a boolean.")
+        raise TypeError(
+            f"PERFECT must be a boolean,"
+            f" got {type(perfect).__name__}."
+        )
 
     if normalized_entry == normalized_exit:
         raise ValueError(
-            "Entry and exit must be different, got both at "
-            f"{normalized_entry}."
+            f"Entry and exit cannot be the same cell:"
+            f" both at {normalized_entry}."
         )
 
     return {
