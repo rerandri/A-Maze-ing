@@ -40,11 +40,11 @@ If advanced features are implemented, include them here:
 ### Installation
 
 ```bash
-git clone https://github.com/rerandri/A-Maze-ing.git
+git clone git@vogsphere.42antananarivo.mg:vogsphere/intra-uuid-c42b910e-c46c-4398-9f62-2080a43720ec-7346472-rerandri A-Maze-ing 
 cd A-Maze-ing
 python3 -m venv .venv
 source .venv/bin/activate    # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+make install
 ```
 
 ### Compilation
@@ -55,26 +55,20 @@ No compilation is required for pure Python projects.
 ### Execution
 
 ```bash
-python3 main.py --config config/default.json
+make run
 ```
 
-Or, if your entrypoint is different:
+Or
 
 ```bash
-python3 <entrypoint>.py
+python3 a_maze_ing.py config.txt
 ```
 
 ### Usage Examples
 
 ```bash
-# Generate a 20x20 maze with default algorithm
-python3 main.py --width 20 --height 20
+#configure parametre in file 'config.txt'
 
-# Use a specific seed for reproducible output
-python3 main.py --width 20 --height 20 --seed 42
-
-# Use config file
-python3 main.py --config config/default.json
 ```
 
 ---
