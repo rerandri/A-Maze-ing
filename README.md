@@ -79,23 +79,21 @@ python3 a_maze_ing.py config.txt
 
 Example (`config/default.json`):
 
-```json
-{
-  "maze": {
-    "width": 20,
-    "height": 20,
-    "algorithm": "recursive_backtracking",
-    "seed": 42
-  },
-  "display": {
-    "mode": "ascii",
-    "show_generation_steps": false
-  },
-  "output": {
-    "save_to_file": true,
-    "file_path": "output/maze.txt"
-  }
-}
+```txt
+# ---- SIZE ----
+WIDTH=30
+HEIGHT=30
+
+# ---- START ----
+ENTRY=29,1
+EXIT=1,29
+
+# ---- OUTPUT FILE ----
+OUTPUT_FILE=maze.txt
+
+# ---- OPTIONAL ----
+PERFECT=true
+SEED=42
 ```
 
 ### Field Reference
