@@ -240,10 +240,3 @@ AI tools were used to support:
 AI was **not** used as a blind code replacement; all produced content was reviewed, adapted, and validated by the team.
 
 ---
-
-## Where to Find More Information
-
-- Repository: https://github.com/rerandri/A-Maze-ing
-- Source code modules: `<src/...>` (update with real paths)
-- Config examples: `<config/...>` (update with real paths)
-- Team notes/project board: `<link if available>`
