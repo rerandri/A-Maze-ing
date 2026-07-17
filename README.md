@@ -81,7 +81,9 @@ Maze generated and saved to 'maze.txt'
 
 Type /help for more commands.
 Maze>> 2
-[fig maze]
+---------------------------------
+            [fig maze]
+---------------------------------
 Info for maze:
 Entry : ██ | Exit : ██ | Path : ██ | wall : ██ | '42' pattern : ██
 
@@ -101,15 +103,15 @@ Show path : OFF
 Example (`config.txt`):
 
 ```txt
-# ---- SIZE ----
+# ---- SIZE | [int] ----
 WIDTH=30
 HEIGHT=30
 
-# ---- START ----
+# ---- START |tuple[int, int] ----
 ENTRY=29,1
 EXIT=1,29
 
-# ---- OUTPUT FILE ----
+# ---- OUTPUT FILE | [str]----
 OUTPUT_FILE=maze.txt
 
 # ---- OPTIONAL ----
