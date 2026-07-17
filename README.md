@@ -40,8 +40,7 @@ If advanced features are implemented, include them here:
 ### Installation
 
 ```bash
-git clone git@vogsphere.42antananarivo.mg:vogsphere/intra-uuid-c42b910e-c46c-4398-9f62-2080a43720ec-7346472-rerandri A-Maze-ing 
-cd A-Maze-ing
+#A-Maze-ing
 python3 -m venv .venv
 source .venv/bin/activate    # On Windows: .venv\Scripts\activate
 make install
